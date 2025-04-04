@@ -1,0 +1,62 @@
+{% extends 'blog/base.html' %}
+
+{% block title %}{{ profile_user.username }}的个人主页 - 我的博客{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-body text-center">
+                {% if profile_user.avatar %}
+                    <img src="{{ profile_user.avatar.url }}" class="rounded-circle mb-3" width="150" height="150" alt="{{ profile_user.username }}">
+                {% else %}
+                    <i class="bi bi-person-circle display-1 mb-3"></i>
+                {% endif %}
+                <h3 class="card-title">{{ profile_user.username }}</h3>
+                {% if profile_user.bio %}
+                    <p class="card-text">{{ profile_user.bio }}</p>
+                {% endif %}
+                {% if user == profile_user %}
+                    <a href="{% url 'edit_profile' %}" class="btn btn-primary">编辑资料</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title mb-4">发布的文章</h2>
+                {% for post in posts %}
+                    <div class="post-item mb-4">
+                        <h3>
+                            <a href="{% url 'post_detail' post.pk %}" class="text-decoration-none">{{ post.title }}</a>
+                        </h3>
+                        <div class="post-meta mb-2">
+                            <i class="bi bi-calendar"></i> {{ post.created_at|date:"Y-m-d H:i" }}
+                            {% if post.category %}
+                                | <i class="bi bi-folder"></i> {{ post.category.name }}
+                            {% endif %}
+                        </div>
+                        <p class="post-excerpt">{{ post.content|truncatewords:50 }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="{% url 'post_detail' post.pk %}" class="btn btn-primary">阅读更多</a>
+                            <div class="text-muted">
+                                <small>
+                                    <i class="bi bi-eye"></i> {{ post.views }} |
+                                    <i class="bi bi-heart"></i> {{ post.liked_by.count }} |
+                                    <i class="bi bi-bookmark"></i> {{ post.favorited_by.count }} |
+                                    <i class="bi bi-chat"></i> {{ post.comments.count }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="alert alert-info">
+                        暂无发布的文章
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

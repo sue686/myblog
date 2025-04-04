@@ -1,0 +1,42 @@
+{% extends 'blog/base.html' %}
+
+{% block title %}我的收藏 - 我的博客{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">我的收藏</h1>
+        
+        {% if favorites %}
+            <div class="card">
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for favorite in favorites %}
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">
+                                        <a href="{% url 'post_detail' favorite.post.slug %}">{{ favorite.post.title }}</a>
+                                    </h5>
+                                    <small>收藏于 {{ favorite.created_at|date:"Y-m-d H:i" }}</small>
+                                </div>
+                                <p class="mb-1">{{ favorite.post.content|truncatechars:100 }}</p>
+                                <div class="d-flex justify-content-between">
+                                    <small>作者: {{ favorite.post.author.username }}</small>
+                                    <a href="{% url 'favorite_post' favorite.post.id %}" class="btn btn-sm btn-outline-danger">
+                                        取消收藏
+                                    </a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <p>您还没有收藏任何文章。</p>
+                <a href="{% url 'home' %}" class="btn btn-primary">浏览文章</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 
