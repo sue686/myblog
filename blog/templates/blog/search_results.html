@@ -1,0 +1,447 @@
+{% extends "blog/base.html" %}
+{% load static %}
+
+{% block title %}Search Results - Selwyn's Blog{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Search results page special styles */
+    .search-banner {
+        background: linear-gradient(135deg, rgba(115, 113, 252, 0.1) 0%, rgba(56, 182, 255, 0.1) 100%);
+        border-radius: 24px;
+        padding: 3rem 2rem;
+        margin-bottom: 3rem;
+        position: relative;
+        overflow: hidden;
+        text-align: center;
+        border: 1px solid var(--card-border);
+    }
+    
+    .search-banner::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3z' fill='%237371fc' fill-opacity='0.2'/%3E%3C/svg%3E");
+        opacity: 0.5;
+        z-index: -1;
+    }
+    
+    .search-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        background: var(--gradient-1);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        display: inline-block;
+    }
+    
+    .search-subtitle {
+        font-size: 1.1rem;
+        color: var(--text-muted);
+        max-width: 700px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .search-box {
+        max-width: 600px;
+        margin: 1.5rem auto 0;
+    }
+    
+    .search-box .form-control {
+        height: 54px;
+        font-size: 1.1rem;
+        padding-left: 50px;
+        padding-right: 20px;
+        background-color: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--card-border);
+        color: var(--text-color);
+        border-radius: 10px;
+    }
+    
+    .search-box .form-control:focus {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.25rem rgba(115, 113, 252, 0.25);
+    }
+    
+    .search-box .search-icon {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+        font-size: 1.2rem;
+    }
+    
+    .search-result-card {
+        background-color: var(--card-bg);
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid var(--card-border);
+        transition: all 0.3s ease;
+        margin-bottom: 1.5rem;
+        padding: 1.5rem;
+    }
+    
+    .search-result-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-md);
+        border-color: var(--primary-color);
+    }
+    
+    .result-category {
+        display: inline-block;
+        background: var(--gradient-1);
+        color: white;
+        font-size: 0.75rem;
+        padding: 0.35rem 0.75rem;
+        border-radius: 50px;
+        margin-bottom: 0.75rem;
+        font-weight: 500;
+    }
+    
+    .result-title {
+        font-size: 1.35rem;
+        margin-bottom: 0.75rem;
+        font-weight: 600;
+        color: var(--text-color);
+    }
+    
+    .result-title a {
+        color: var(--text-color);
+        transition: all 0.3s ease;
+    }
+    
+    .result-title a:hover {
+        color: var(--primary-color);
+    }
+    
+    .result-excerpt {
+        color: var(--text-muted);
+        margin-bottom: 1.25rem;
+        line-height: 1.6;
+    }
+    
+    .result-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 1rem;
+        border-top: 1px solid var(--card-border);
+        color: var(--text-muted);
+        font-size: 0.85rem;
+    }
+    
+    .result-author {
+        display: flex;
+        align-items: center;
+    }
+    
+    .result-avatar {
+        width: 36px;
+        height: 36px;
+        background-color: var(--primary-color);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        margin-right: 0.75rem;
+    }
+    
+    .result-stats {
+        display: flex;
+        gap: 1rem;
+    }
+    
+    .result-stat {
+        display: flex;
+        align-items: center;
+    }
+    
+    .result-stat i {
+        margin-right: 0.25rem;
+    }
+    
+    .filter-section {
+        margin-bottom: 2.5rem;
+        padding: 1.5rem;
+        background-color: var(--card-bg);
+        border-radius: 16px;
+        border: 1px solid var(--card-border);
+    }
+    
+    .filter-title {
+        font-size: 1.1rem;
+        margin-bottom: 1.25rem;
+        color: var(--text-color);
+        font-weight: 600;
+    }
+    
+    .filter-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+    
+    .filter-badge {
+        background-color: rgba(115, 113, 252, 0.1);
+        color: var(--primary-color);
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+        border: 1px solid var(--card-border);
+    }
+    
+    .filter-badge:hover, .filter-badge.active {
+        background-color: var(--primary-color);
+        color: white;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(115, 113, 252, 0.2);
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background-color: var(--card-bg);
+        border-radius: 16px;
+        border: 1px solid var(--card-border);
+    }
+    
+    .empty-state-icon {
+        font-size: 3rem;
+        margin-bottom: 1.5rem;
+        color: var(--text-muted);
+    }
+    
+    .empty-state-title {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        color: var(--text-color);
+    }
+    
+    .empty-state-text {
+        color: var(--text-muted);
+        margin-bottom: 2rem;
+        max-width: 500px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .pagination {
+        display: flex;
+        justify-content: center;
+        margin-top: 3rem;
+    }
+    
+    .page-link {
+        width: 40px;
+        height: 40px;
+        margin: 0 0.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        background-color: var(--card-bg);
+        border: 1px solid var(--card-border);
+        color: var(--text-color);
+        transition: all 0.3s ease;
+    }
+    
+    .page-link:hover {
+        background-color: rgba(115, 113, 252, 0.1);
+        color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+    
+    .page-item.active .page-link {
+        background: var(--gradient-1);
+        color: white;
+        border-color: var(--primary-color);
+    }
+    
+    @media (max-width: 768px) {
+        .search-title {
+            font-size: 2rem;
+        }
+        
+        .search-banner {
+            padding: 2.5rem 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .search-box .form-control {
+            height: 48px;
+            font-size: 1rem;
+        }
+        
+        .result-title {
+            font-size: 1.25rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Search Banner -->
+<section class="search-banner">
+    <div class="container">
+        <h1 class="search-title">Search Results</h1>
+        <p class="search-subtitle">
+            {% if search_query %}
+            Results for "{{ search_query }}"
+            {% else %}
+            Please enter keywords to search articles
+            {% endif %}
+        </p>
+        
+        <!-- Search Box -->
+        <div class="search-box position-relative">
+            <form class="d-flex" action="{% url 'blog:search' %}" method="get">
+                <input class="form-control" type="search" placeholder="Search articles..." name="q" value="{{ search_query }}">
+                <i class="fas fa-search search-icon"></i>
+            </form>
+        </div>
+    </div>
+</section>
+
+<!-- Filter Area -->
+{% if categories %}
+<div class="container">
+    <section class="filter-section">
+        <h2 class="filter-title">
+            <i class="fas fa-filter me-2"></i>Filter by Category
+        </h2>
+        <div class="filter-badges">
+            <a href="{% url 'blog:search' %}?q={{ search_query }}" class="filter-badge {% if not category %}active{% endif %}">All</a>
+            {% for cat in categories %}
+            <a href="{% url 'blog:search' %}?q={{ search_query }}&category={{ cat.id }}" class="filter-badge {% if category.id == cat.id %}active{% endif %}">{{ cat.name }}</a>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endif %}
+
+<!-- Search Results List -->
+<div class="container">
+    {% if posts %}
+        {% for post in posts %}
+        <article class="search-result-card">
+            {% if post.category %}
+            <a href="{% url 'blog:category_posts' post.category.slug %}" class="result-category">{{ post.category.name }}</a>
+            {% endif %}
+            <h2 class="result-title">
+                <a href="{% url 'blog:post_detail' post.slug %}">{{ post.title }}</a>
+            </h2>
+            <div class="result-excerpt">
+                {{ post.content|striptags|truncatewords:50 }}
+            </div>
+            <div class="result-meta">
+                <div class="result-author">
+                    <div class="result-avatar">
+                        {{ post.author.username.0|upper }}
+                    </div>
+                    <div>
+                        <div class="fw-500">{{ post.author.username }}</div>
+                        <small>{{ post.created_at|date:"Y-m-d" }}</small>
+                    </div>
+                </div>
+                <div class="result-stats">
+                    <div class="result-stat">
+                        <i class="fas fa-eye"></i> {{ post.views }}
+                    </div>
+                    <div class="result-stat">
+                        <i class="fas fa-thumbs-up"></i> {{ post.likes.count }}
+                    </div>
+                    <div class="result-stat">
+                        <i class="fas fa-comment"></i> {{ post.comments.count }}
+                    </div>
+                </div>
+            </div>
+        </article>
+        {% endfor %}
+    {% else %}
+        <!-- No Results State -->
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="fas fa-search"></i>
+            </div>
+            <h3 class="empty-state-title">No Articles Found</h3>
+            <p class="empty-state-text">
+                {% if search_query %}
+                No articles found related to "{{ search_query }}". Try using different keywords or browse the categories below.
+                {% else %}
+                Please enter keywords to search for articles.
+                {% endif %}
+            </p>
+            <a href="{% url 'blog:index' %}" class="btn btn-primary">
+                <i class="fas fa-home me-2"></i>Return to Homepage
+            </a>
+        </div>
+        
+        {% if categories %}
+        <section class="mt-5">
+            <h2 class="mb-4">Browse Categories</h2>
+            <div class="row">
+                {% for cat in categories %}
+                <div class="col-md-4 mb-3">
+                    <a href="{% url 'blog:category_posts' cat.slug %}" class="d-block p-3 bg-dark rounded text-center">
+                        <i class="fas fa-folder me-2"></i>{{ cat.name }} ({{ cat.post_count }})
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+    {% endif %}
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?q={{ search_query }}&page=1" aria-label="First">
+                    <i class="fas fa-angle-double-left"></i>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?q={{ search_query }}&page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                    <i class="fas fa-angle-left"></i>
+                </a>
+            </li>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <li class="page-item active"><a class="page-link" href="?q={{ search_query }}&page={{ num }}">{{ num }}</a></li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item"><a class="page-link" href="?q={{ search_query }}&page={{ num }}">{{ num }}</a></li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?q={{ search_query }}&page={{ page_obj.next_page_number }}" aria-label="Next">
+                    <i class="fas fa-angle-right"></i>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?q={{ search_query }}&page={{ page_obj.paginator.num_pages }}" aria-label="Last">
+                    <i class="fas fa-angle-double-right"></i>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %} 

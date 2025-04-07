@@ -9,10 +9,10 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('SECRET_KEY')
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-default-key-for-development')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', 'False') == 'True'
+DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
 
 ALLOWED_HOSTS = ['*']  # For development only
 
@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     # 第三方应用
     'rest_framework',
     'corsheaders',
+    'widget_tweaks',
     
     # 自定义应用
     'blog',
@@ -47,11 +48,12 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'blog_project.urls'
+DEBUG_PROPAGATE_EXCEPTIONS = True
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -66,17 +68,25 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'blog_project.wsgi.application'
 
-# 配置PostgreSQL数据库
+# 配置数据库 - 添加SQLite作为备选
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': os.getenv('DB_PORT'),
+        'NAME': os.getenv('DB_NAME', 'myblogdb'),
+        'USER': os.getenv('DB_USER', 'postgres'),
+        'PASSWORD': os.getenv('DB_PASSWORD', ''),
+        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'PORT': os.getenv('DB_PORT', '5432'),
+        'CONN_MAX_AGE': 600,  # 10分钟
     }
 }
+
+# 如果PostgreSQL连接失败，可以切换到SQLite
+if DEBUG:
+    DATABASES['sqlite'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    }
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -95,14 +105,17 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # Internationalization
-LANGUAGE_CODE = 'zh-hans'
+LANGUAGE_CODE = 'en-us'  # Changed to English
 TIME_ZONE = 'Asia/Shanghai'
 USE_I18N = True
 USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'staticfiles'),
+]
 
 # 配置媒体文件
 MEDIA_URL = '/media/'
@@ -127,10 +140,21 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10
 }
 
+# 配置Django Admin
+ADMIN_SITE_HEADER = "Blog Management System"
+ADMIN_SITE_TITLE = "Blog Admin"
+ADMIN_INDEX_TITLE = "Welcome to Blog Management System"
+
 # 配置用户模型
 AUTH_USER_MODEL = 'users.User'
 
 # 登录和登出后的重定向 URL
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
-LOGIN_URL = '/users/login/' 
+LOGIN_URL = '/users/login/'
+
+# 会话安全设置
+SESSION_COOKIE_SECURE = False  # 如果使用HTTPS，设置为True
+SESSION_COOKIE_HTTPONLY = True  # 防止JavaScript访问
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_COOKIE_AGE = 1209600  # 两周 

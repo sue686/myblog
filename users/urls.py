@@ -9,6 +9,8 @@ from .views import UserViewSet, profile, edit_profile, register, user_login, use
 router = DefaultRouter()
 router.register(r'users', UserViewSet)
 
+app_name = 'users'
+
 urlpatterns = [
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),

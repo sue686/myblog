@@ -1,0 +1,940 @@
+{% extends "blog/base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .resume-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    
+    .hero-section {
+        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        padding: 7rem 0 12rem;
+        position: relative;
+        margin-bottom: 0;
+        color: white;
+        overflow: hidden;
+    }
+    
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: url('data:image/svg+xml;charset=utf8,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"%3E%3Cpath fill="%23ffffff" fill-opacity="0.1" d="M0,96L48,112C96,128,192,160,288,165.3C384,171,480,149,576,149.3C672,149,768,171,864,186.7C960,203,1056,213,1152,192C1248,171,1344,117,1392,90.7L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"%3E%3C/path%3E%3C/svg%3E');
+        background-size: cover;
+        background-position: bottom;
+        opacity: 0.2;
+    }
+    
+    .hero-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle at 20% 50%, rgba(36, 57, 138, 0) 0%, rgba(36, 57, 138, 0.2) 100%);
+    }
+    
+    .hero-pattern {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: url('data:image/svg+xml;charset=utf8,%3Csvg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z" fill="%23ffffff" fill-opacity="0.05" fill-rule="evenodd"/%3E%3C/svg%3E');
+        opacity: 0.5;
+    }
+    
+    .particles-js {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        z-index: 1;
+    }
+    
+    .hero-content {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .intro-section {
+        background-color: white;
+        border-radius: 15px;
+        padding: 3rem 3.5rem;
+        margin-top: -8rem;
+        margin-bottom: 2.5rem;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+        position: relative;
+        z-index: 10;
+    }
+    
+    .intro-name {
+        font-weight: 800;
+        font-size: 2.5rem;
+        color: #2c3e50;
+        margin-bottom: 0.75rem;
+        position: relative;
+        display: inline-block;
+    }
+    
+    .intro-name::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: -10px;
+        width: 70px;
+        height: 4px;
+        background: #4e73df;
+        border-radius: 2px;
+    }
+    
+    .intro-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #4e73df;
+        margin-bottom: 1.5rem;
+        margin-top: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .intro-title i {
+        font-size: 1.1rem;
+    }
+    
+    .name-highlight {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .name-highlight::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: 5px;
+        width: 100%;
+        height: 10px;
+        background-color: rgba(78, 115, 223, 0.2);
+        z-index: -1;
+        transform: skew(-10deg);
+    }
+    
+    .contact-info {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.2rem;
+        margin: 2rem 0;
+    }
+    
+    .contact-info-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        background-color: #f8f9fc;
+        padding: 0.8rem 1.3rem;
+        border-radius: 50px;
+        font-weight: 600;
+        color: #5a5c69;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+    
+    .contact-info-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        background-color: #4e73df;
+        color: white;
+    }
+    
+    .contact-info-item i {
+        color: #4e73df;
+        font-size: 1.2rem;
+        transition: all 0.3s ease;
+    }
+    
+    .contact-info-item:hover i {
+        color: white;
+    }
+    
+    .section-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
+        overflow: hidden;
+        margin-bottom: 2.5rem;
+        transition: transform 0.4s ease, box-shadow 0.4s ease;
+        background-color: white;
+        position: relative;
+    }
+    
+    .section-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 7px;
+        background: var(--section-color);
+    }
+    
+    .section-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+    }
+    
+    .section-header {
+        padding: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .section-header i {
+        font-size: 1.8rem;
+        color: var(--section-color);
+    }
+    
+    .section-header h3 {
+        margin: 0;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        color: #2c3e50;
+    }
+    
+    .section-body {
+        padding: 0;
+    }
+    
+    .experience-card {
+        padding: 2.5rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        background-color: white;
+    }
+    
+    .experience-card::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 0;
+        background-color: var(--section-color);
+        opacity: 0.03;
+        transition: width 0.4s ease;
+    }
+    
+    .experience-card:hover::before {
+        width: 100%;
+    }
+    
+    .experience-card:last-child {
+        border-bottom: none;
+    }
+    
+    .experience-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1.5rem;
+    }
+    
+    .period-badge {
+        background-color: var(--section-color);
+        color: white;
+        font-size: 0.85rem;
+        padding: 0.5rem 1.2rem;
+        border-radius: 30px;
+        font-weight: 600;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .period-badge i {
+        font-size: 0.8rem;
+    }
+    
+    .job-title {
+        color: #2c3e50;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        font-size: 1.35rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .job-title i {
+        color: var(--section-color);
+        font-size: 1.1rem;
+    }
+    
+    .company-info {
+        color: #566573;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .company-info i {
+        color: var(--section-color);
+    }
+    
+    .responsibility-list {
+        padding-left: 1.5rem;
+        margin-bottom: 0;
+    }
+    
+    .responsibility-list li {
+        margin-bottom: 0.9rem;
+        position: relative;
+        line-height: 1.6;
+        padding-left: 0.5rem;
+    }
+    
+    .responsibility-list li:last-child {
+        margin-bottom: 0;
+    }
+    
+    .responsibility-list li::before {
+        content: '•';
+        position: absolute;
+        left: -1rem;
+        top: 0;
+        color: var(--section-color);
+        font-weight: bold;
+        font-size: 1.2rem;
+    }
+    
+    .skills-section {
+        padding: 2.5rem;
+    }
+    
+    .skills-group {
+        margin-bottom: 2.5rem;
+    }
+    
+    .skills-group:last-child {
+        margin-bottom: 0;
+    }
+    
+    .skills-title {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+        font-weight: 700;
+        color: #2c3e50;
+        font-size: 1.2rem;
+    }
+    
+    .skills-title i {
+        color: var(--section-color);
+    }
+    
+    .skill-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+    
+    .skill-badge {
+        background-color: #f8f9fc;
+        color: #2c3e50;
+        border: 1px solid #e3e6f0;
+        border-radius: 50px;
+        padding: 0.7rem 1.3rem;
+        font-size: 0.95rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        transition: all 0.3s ease;
+    }
+    
+    .skill-badge i {
+        color: var(--section-color);
+        font-size: 1rem;
+    }
+    
+    .skill-badge:hover {
+        background-color: var(--section-color);
+        color: white;
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .skill-badge:hover i {
+        color: white;
+    }
+    
+    .education-section {
+        padding: 2.5rem;
+    }
+    
+    .project-card {
+        background-color: #f8f9fc;
+        border-radius: 15px;
+        padding: 1.75rem;
+        margin-bottom: 1.5rem;
+        border-left: 5px solid var(--section-color);
+        transition: all 0.3s ease;
+    }
+    
+    .project-card:hover {
+        transform: translateX(5px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    }
+    
+    .project-title {
+        color: var(--section-color);
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 1.1rem;
+    }
+    
+    .project-title i {
+        font-size: 0.9rem;
+    }
+    
+    .project-description {
+        font-size: 0.95rem;
+        color: #566573;
+        line-height: 1.7;
+        margin-bottom: 0;
+    }
+    
+    .course-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-top: 1rem;
+    }
+    
+    .course-badge {
+        background-color: #f8f9fc;
+        color: #2c3e50;
+        border: 1px solid #e3e6f0;
+        border-radius: 50px;
+        padding: 0.7rem 1.3rem;
+        font-size: 0.95rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        transition: all 0.3s ease;
+    }
+    
+    .course-badge i {
+        color: var(--section-color);
+        font-size: 0.9rem;
+    }
+    
+    .course-badge:hover {
+        background-color: var(--section-color);
+        color: white;
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .course-badge:hover i {
+        color: white;
+    }
+    
+    .section-work { --section-color: #4e73df; }
+    .section-skills { --section-color: #1cc88a; }
+    .section-education { --section-color: #36b9cc; }
+    
+    .summary-section {
+        background-color: white;
+        border-radius: 15px;
+        padding: 2.5rem;
+        margin-bottom: 2.5rem;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
+        position: relative;
+        overflow: hidden;
+        line-height: 1.8;
+    }
+    
+    .summary-section::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 7px;
+        height: 100%;
+        background: linear-gradient(to bottom, #4e73df, #224abe);
+    }
+    
+    .summary-title {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: #2c3e50;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        font-size: 1.35rem;
+    }
+    
+    .summary-title i {
+        color: #4e73df;
+        font-size: 1.2rem;
+    }
+    
+    .summary-content {
+        color: #566573;
+        font-size: 1.05rem;
+        padding-left: 0.5rem;
+        line-height: 1.8;
+    }
+    
+    .summary-content strong {
+        color: #2c3e50;
+        font-weight: 700;
+    }
+    
+    .social-links {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+        margin-top: 1.5rem;
+    }
+    
+    .social-link {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #f8f9fc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #5a5c69;
+        font-size: 1.2rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+    
+    .social-link:hover {
+        transform: translateY(-5px);
+        color: white;
+    }
+    
+    .social-link.linkedin:hover { background-color: #0077B5; }
+    .social-link.github:hover { background-color: #333; }
+    .social-link.twitter:hover { background-color: #1DA1F2; }
+    .social-link.website:hover { background-color: #4e73df; }
+    
+    .btn-print {
+        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 0.9rem 2.5rem;
+        font-weight: 600;
+        font-size: 1.1rem;
+        box-shadow: 0 8px 25px rgba(78, 115, 223, 0.3);
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .btn-print:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 30px rgba(78, 115, 223, 0.4);
+    }
+    
+    .download-section {
+        background-color: #f8f9fc;
+        border-radius: 15px;
+        padding: 2rem;
+        text-align: center;
+        margin-bottom: 2.5rem;
+        border: 1px dashed #e3e6f0;
+        transition: all 0.3s ease;
+    }
+    
+    .download-section:hover {
+        background-color: white;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    }
+    
+    .download-title {
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 1.5rem;
+        font-size: 1.3rem;
+    }
+    
+    /* 动画效果 */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .animate-fadeIn {
+        opacity: 0;
+        animation: fadeInUp 0.7s ease-out forwards;
+    }
+    
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+    .delay-4 { animation-delay: 0.4s; }
+    .delay-5 { animation-delay: 0.5s; }
+    
+    /* 打印样式 */
+    @media print {
+        .hero-section,
+        .hero-overlay,
+        .hero-pattern,
+        .navbar,
+        .footer,
+        .download-section,
+        .social-links {
+            display: none !important;
+        }
+        
+        body {
+            font-size: 12pt;
+            color: #000;
+            background: #fff;
+        }
+        
+        .intro-section,
+        .summary-section,
+        .section-card {
+            box-shadow: none !important;
+            border: 1px solid #eee !important;
+            margin: 15pt 0 !important;
+            page-break-inside: avoid;
+        }
+        
+        .intro-section {
+            margin-top: 0 !important;
+            padding: 0 !important;
+        }
+        
+        .section-card:hover,
+        .experience-card:hover,
+        .skill-badge:hover,
+        .course-badge:hover,
+        .project-card:hover {
+            transform: none !important;
+            box-shadow: none !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="hero-overlay"></div>
+    <div class="hero-pattern"></div>
+    <div id="particles-js" class="particles-js"></div>
+    <div class="container hero-content">
+        <div class="row">
+            <div class="col-lg-10 mx-auto text-center">
+                <h1 class="display-4 fw-bold mb-3 animate-fadeIn">Resume</h1>
+                <p class="lead animate-fadeIn delay-1">IT Support & Development Specialist with extensive experience in technical support, system administration, and project management</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="container mb-5 resume-container">
+    <!-- Introduction Section -->
+    <div class="intro-section animate-fadeIn delay-2">
+        <div class="row">
+            <div class="col-lg-8">
+                <h1 class="intro-name"><span class="name-highlight">{{ resume.name }}</span></h1>
+                <h2 class="intro-title">
+                    <i class="fas fa-user-tie"></i> IT Support Officer
+                </h2>
+                
+                <div class="contact-info">
+                    <span class="contact-info-item">
+                        <i class="fas fa-envelope"></i> {{ resume.email }}
+                    </span>
+                    <span class="contact-info-item">
+                        <i class="fas fa-phone"></i> {{ resume.phone }}
+                    </span>
+                    <span class="contact-info-item">
+                        <i class="fas fa-map-marker-alt"></i> Sydney, Australia
+                    </span>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="social-links">
+                    <a href="#" class="social-link linkedin" title="LinkedIn Profile">
+                        <i class="fab fa-linkedin-in"></i>
+                    </a>
+                    <a href="#" class="social-link github" title="GitHub Profile">
+                        <i class="fab fa-github"></i>
+                    </a>
+                    <a href="#" class="social-link twitter" title="Twitter Profile">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="#" class="social-link website" title="Personal Website">
+                        <i class="fas fa-globe"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Professional Summary -->
+    <div class="summary-section animate-fadeIn delay-3">
+        <h4 class="summary-title">
+            <i class="fas fa-user-tie"></i> Professional Summary
+        </h4>
+        <div class="summary-content">
+            {{ resume.summary|safe }}
+        </div>
+    </div>
+
+    <!-- Work Experience -->
+    <div class="section-card section-work animate-fadeIn delay-4">
+        <div class="section-header">
+            <i class="fas fa-briefcase"></i>
+            <h3>Work Experience</h3>
+        </div>
+        <div class="section-body">
+            {% for job in resume.experience %}
+            <div class="experience-card">
+                <div class="experience-header">
+                    <div>
+                        <h4 class="job-title">
+                            <i class="fas fa-id-badge"></i> {{ job.position }}
+                        </h4>
+                        <h5 class="company-info">
+                            <i class="fas fa-building"></i> {{ job.company }} 
+                            <i class="fas fa-map-marker-alt"></i> {{ job.location }}
+                        </h5>
+                    </div>
+                    <span class="period-badge">
+                        <i class="far fa-calendar-alt"></i> {{ job.period }}
+                    </span>
+                </div>
+                <ul class="responsibility-list">
+                    {% for resp in job.responsibilities %}
+                    <li>{{ resp }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Skills -->
+    <div class="section-card section-skills animate-fadeIn delay-5">
+        <div class="section-header">
+            <i class="fas fa-laptop-code"></i>
+            <h3>Professional Skills</h3>
+        </div>
+        <div class="skills-section">
+            <div class="skills-group">
+                <h5 class="skills-title">
+                    <i class="fas fa-language"></i> Languages
+                </h5>
+                <div class="skill-badges">
+                    {% for lang in resume.skills.languages %}
+                    <span class="skill-badge">
+                        <i class="fas fa-check-circle"></i> {{ lang }}
+                    </span>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="skills-group">
+                <h5 class="skills-title">
+                    <i class="fas fa-tools"></i> Technical Skills
+                </h5>
+                <ul class="responsibility-list">
+                    {% for skill in resume.skills.technical %}
+                    <li>{{ skill }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Education -->
+    <div class="section-card section-education">
+        <div class="section-header">
+            <i class="fas fa-graduation-cap"></i>
+            <h3>Education</h3>
+        </div>
+        <div class="education-section">
+            {% for edu in resume.education %}
+            <div class="experience-card">
+                <div class="experience-header">
+                    <div>
+                        <h4 class="job-title">
+                            <i class="fas fa-user-graduate"></i> {{ edu.degree }}
+                        </h4>
+                        <h5 class="company-info">
+                            <i class="fas fa-university"></i> {{ edu.university }} 
+                            <i class="fas fa-map-marker-alt"></i> {{ edu.location }}
+                        </h5>
+                    </div>
+                    <span class="period-badge">
+                        <i class="far fa-calendar-alt"></i> {{ edu.period }}
+                    </span>
+                </div>
+                
+                {% if edu.projects %}
+                <div class="mt-4">
+                    <h5 class="skills-title">
+                        <i class="fas fa-project-diagram"></i> Projects
+                    </h5>
+                    {% for project in edu.projects %}
+                    <div class="project-card">
+                        <h6 class="project-title">
+                            <i class="fas fa-code-branch"></i> {{ project.name }}
+                        </h6>
+                        <p class="project-description">{{ project.description }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                {% if edu.courses %}
+                <div class="mt-4">
+                    <h5 class="skills-title">
+                        <i class="fas fa-book"></i> Key Courses
+                    </h5>
+                    <div class="course-badges">
+                        {% for course in edu.courses %}
+                        <span class="course-badge">
+                            <i class="fas fa-certificate"></i> {{ course }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Download Section -->
+    <div class="download-section animate-fadeIn">
+        <h5 class="download-title">Need a copy of my resume?</h5>
+        <button class="btn btn-print" onclick="window.print()">
+            <i class="fas fa-file-pdf"></i> Download PDF Resume
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof particlesJS !== 'undefined') {
+            particlesJS('particles-js', {
+                "particles": {
+                    "number": {
+                        "value": 80,
+                        "density": {
+                            "enable": true,
+                            "value_area": 800
+                        }
+                    },
+                    "color": {
+                        "value": "#ffffff"
+                    },
+                    "shape": {
+                        "type": "circle",
+                        "stroke": {
+                            "width": 0,
+                            "color": "#000000"
+                        },
+                    },
+                    "opacity": {
+                        "value": 0.3,
+                        "random": false,
+                        "anim": {
+                            "enable": false
+                        }
+                    },
+                    "size": {
+                        "value": 3,
+                        "random": true,
+                        "anim": {
+                            "enable": false
+                        }
+                    },
+                    "line_linked": {
+                        "enable": true,
+                        "distance": 150,
+                        "color": "#ffffff",
+                        "opacity": 0.2,
+                        "width": 1
+                    },
+                    "move": {
+                        "enable": true,
+                        "speed": 2,
+                        "direction": "none",
+                        "random": false,
+                        "straight": false,
+                        "out_mode": "out",
+                        "bounce": false,
+                    }
+                },
+                "interactivity": {
+                    "detect_on": "canvas",
+                    "events": {
+                        "onhover": {
+                            "enable": true,
+                            "mode": "grab"
+                        },
+                        "onclick": {
+                            "enable": true,
+                            "mode": "push"
+                        },
+                        "resize": true
+                    },
+                    "modes": {
+                        "grab": {
+                            "distance": 140,
+                            "line_linked": {
+                                "opacity": 0.6
+                            }
+                        },
+                        "push": {
+                            "particles_nb": 4
+                        }
+                    }
+                },
+                "retina_detect": true
+            });
+        }
+    });
+</script>
+{% endblock %} 

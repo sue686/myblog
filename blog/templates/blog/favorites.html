@@ -1,13 +1,18 @@
-{% extends 'blog/base.html' %}
+{% extends "blog/base.html" %}
 
-{% block title %}我的收藏 - 我的博客{% endblock %}
+{% block title %}My Favorites - Wenxin Blog{% endblock %}
 
 {% block extra_css %}
 <style>
     .favorites-header {
-        background: linear-gradient(135deg, #5c6bc0, #3949ab);
-        padding: 3rem 0;
-        margin-bottom: 2rem;
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+        border-radius: var(--border-radius-lg);
+        padding: 3rem;
+        margin-bottom: 2.5rem;
+        border: none;
+        box-shadow: var(--shadow-md);
+        text-align: center;
+        color: white;
         position: relative;
         overflow: hidden;
     }
@@ -19,108 +24,751 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: url('https://source.unsplash.com/random/1200x600/?books') center/cover;
-        opacity: 0.1;
+        background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        z-index: 0;
     }
     
-    .favorite-card {
+    .favorites-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: white;
+        position: relative;
+        z-index: 1;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .favorites-subtitle {
+        font-size: 1.2rem;
+        color: rgba(255,255,255,0.9);
+        max-width: 700px;
+        margin: 0 auto 2rem;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .favorites-stats {
+        display: flex;
+        justify-content: space-evenly;
+        gap: 0;
+        position: relative;
+        z-index: 1;
+        background-color: rgba(255,255,255,0.15);
+        border-radius: 100px;
+        padding: 0.75rem 1.25rem;
+        margin: 0 auto;
+        max-width: 400px;
+        width: 100%;
+        backdrop-filter: blur(5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        animation: slideUp 0.6s ease-out forwards;
         transition: all 0.3s ease;
-        margin-bottom: 1.5rem;
-        overflow: hidden;
-        border: none;
-        border-radius: 1rem;
     }
     
-    .favorite-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    .favorites-stats:hover {
+        background-color: rgba(255,255,255,0.2);
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.15);
     }
     
-    .no-favorites {
-        padding: 5rem 0;
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .favorites-stat {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 0.5rem 0.25rem;
+        flex: 1;
+        position: relative;
         text-align: center;
+        transition: all 0.3s ease;
     }
     
-    .no-favorites i {
-        font-size: 5rem;
-        color: #dee2e6;
+    .favorites-stat:hover {
+        transform: scale(1.05);
+    }
+    
+    .favorites-stat:hover .favorites-stat-value {
+        color: #ffffff;
+        text-shadow: 0 0 10px rgba(255,255,255,0.5);
+    }
+    
+    .favorites-stat:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        right: 0;
+        top: 20%;
+        height: 60%;
+        width: 1px;
+        background-color: rgba(255,255,255,0.3);
+    }
+    
+    .favorites-stat-value {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: white;
+        text-align: center;
+        margin-bottom: 0.25rem;
+        line-height: 1;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        display: block;
+        width: 100%;
+    }
+    
+    .favorites-stat-label {
+        font-size: 0.85rem;
+        color: rgba(255,255,255,0.8);
+        margin-top: 0.25rem;
+        text-align: center;
+        white-space: nowrap;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+        display: block;
+        width: 100%;
+    }
+    
+    .favorites-stat:hover .favorites-stat-label {
+        color: #ffffff;
+    }
+    
+    .favorites-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    
+    .favorite-item {
+        background-color: var(--bg-white);
+        border-radius: var(--border-radius);
+        border: 1px solid var(--card-border);
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .favorite-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(to bottom, var(--primary-color), var(--primary-light));
+        opacity: 0;
+        transition: all 0.3s ease;
+    }
+    
+    .favorite-item:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-md);
+        border-color: var(--primary-light);
+    }
+    
+    .favorite-item:hover::before {
+        opacity: 1;
+    }
+    
+    .favorite-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+    
+    .favorite-title {
+        font-size: 1.35rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .favorite-category {
+        display: inline-flex;
+        align-items: center;
+        background-color: var(--accent-bg);
+        color: var(--accent-color);
+        font-size: 0.8rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+    
+    .favorite-category i {
+        font-size: 0.75rem;
+        margin-right: 0.35rem;
+    }
+    
+    .favorite-date {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+    }
+    
+    .favorite-excerpt {
+        color: var(--text-secondary);
         margin-bottom: 1.5rem;
+        line-height: 1.6;
+    }
+    
+    .favorite-author {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+    
+    .favorite-author-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background-color: var(--primary-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 500;
+    }
+    
+    .favorite-author-name {
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+    
+    .favorite-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .favorite-tag {
+        display: inline-flex;
+        align-items: center;
+        background-color: var(--primary-bg);
+        color: var(--primary-color);
+        font-size: 0.75rem;
+        padding: 0.25rem 0.6rem;
+        border-radius: 50px;
+        transition: all 0.3s ease;
+    }
+    
+    .favorite-tag i {
+        font-size: 0.7rem;
+        margin-right: 0.35rem;
+    }
+    
+    .favorite-tag:hover {
+        background-color: var(--primary-color);
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .favorite-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 1rem;
+        border-top: 1px solid var(--card-border);
+    }
+    
+    .favorite-meta {
+        display: flex;
+        gap: 1.5rem;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+    }
+    
+    .favorite-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .favorite-actions {
+        display: flex;
+        gap: 0.75rem;
+    }
+    
+    .favorite-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background-color: var(--bg-gray-100);
+        color: var(--text-secondary);
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .favorite-action:hover {
+        background-color: var(--primary-bg);
+        color: var(--primary-color);
+        transform: translateY(-2px);
+    }
+    
+    .favorite-action.remove:hover {
+        background-color: var(--accent-bg);
+        color: var(--accent-color);
+    }
+    
+    .favorite-date-added {
+        position: absolute;
+        top: 1.5rem;
+        right: 1.5rem;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+    }
+    
+    .empty-state {
+        padding: 3rem;
+        text-align: center;
+        background-color: var(--bg-white);
+        border-radius: var(--border-radius);
+        border: 1px solid var(--card-border);
+    }
+    
+    .empty-state-icon {
+        font-size: 3rem;
+        color: var(--text-light);
+        margin-bottom: 1.5rem;
+    }
+    
+    .empty-state-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: var(--text-primary);
+    }
+    
+    .empty-state-message {
+        color: var(--text-secondary);
+        margin-bottom: 1.5rem;
+        max-width: 500px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    /* 导航和过滤器 */
+    .favorites-filter {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .filter-btn {
+        padding: 0.5rem 1.25rem;
+        border-radius: 50px;
+        background-color: var(--bg-white);
+        border: 1px solid var(--card-border);
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow-xs);
+    }
+    
+    .filter-btn:hover, .filter-btn.active {
+        background-color: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+        box-shadow: var(--shadow-sm);
+        transform: translateY(-2px);
+    }
+    
+    .filter-btn i {
+        margin-right: 0.5rem;
+    }
+    
+    /* 书签效果 */
+    .ribbon-bookmark {
+        position: absolute;
+        top: -5px;
+        right: 15px;
+        color: var(--primary-color);
+        font-size: 1.5rem;
+        opacity: 0.7;
+        transition: all 0.3s ease;
+        transform: scale(1);
+        transform-origin: top center;
+    }
+    
+    .favorite-item:hover .ribbon-bookmark {
+        transform: scale(1.2);
+        opacity: 1;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- 收藏页面头部 -->
 <div class="favorites-header">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-8 mx-auto text-center">
-                <h1 class="text-white">我的收藏</h1>
-                <p class="lead text-white-50">您收藏的所有文章都会显示在这里</p>
+    <h1 class="favorites-title">My Favorite Articles</h1>
+    <p class="favorites-subtitle">Discover and revisit the articles you've bookmarked for later reading.</p>
+    <div class="favorites-stats">
+        <div class="favorites-stat">
+            <div class="favorites-stat-value">{{ favorites|length }}</div>
+            <div class="favorites-stat-label">Saved Articles</div>
+        </div>
+        <div class="favorites-stat">
+            <div class="favorites-stat-value">{{ categories_count }}</div>
+            <div class="favorites-stat-label">Categories</div>
+        </div>
+        <div class="favorites-stat">
+            <div class="favorites-stat-value">{{ authors_count }}</div>
+            <div class="favorites-stat-label">Authors</div>
+        </div>
+    </div>
+</div>
+
+{% if favorites %}
+<div class="favorites-filter">
+    <button class="filter-btn active" data-filter="all">
+        <i class="fas fa-globe"></i>All
+    </button>
+    <button class="filter-btn" data-filter="recent">
+        <i class="fas fa-clock"></i>Recently Added
+    </button>
+    {% if categories %}
+    <button class="filter-btn" data-filter="categories">
+        <i class="fas fa-folder"></i>By Category
+    </button>
+    {% endif %}
+    {% if authors %}
+    <button class="filter-btn" data-filter="authors">
+        <i class="fas fa-users"></i>By Author
+    </button>
+    {% endif %}
+</div>
+{% endif %}
+
+{% if favorites %}
+<div class="favorites-list">
+    {% for post in favorites %}
+    <div class="favorite-item">
+        <div class="ribbon-bookmark">
+            <i class="fas fa-bookmark"></i>
+        </div>
+        <span class="favorite-date-added">
+            <i class="far fa-bookmark me-1"></i>Bookmarked
+        </span>
+        
+        <div class="favorite-header">
+            <div>
+                {% if post.category %}
+                <a href="{% url 'blog:category_posts' post.category.slug %}" class="favorite-category">
+                    <i class="fas fa-folder"></i>{{ post.category.name }}
+                </a>
+                {% endif %}
+                <h3 class="favorite-title">
+                    <a href="{% url 'blog:post_detail' post.slug %}">{{ post.title }}</a>
+                </h3>
+            </div>
+        </div>
+        
+        <div class="favorite-author">
+            <div class="favorite-author-avatar">
+                {{ post.author.username.0|upper }}
+            </div>
+            <a href="{% url 'blog:user-posts' post.author.username %}" class="favorite-author-name">{{ post.author.username }}</a>
+            <span class="favorite-date">
+                <i class="far fa-calendar me-1"></i>{{ post.created_at|date:"F d, Y" }}
+            </span>
+        </div>
+        
+        <div class="favorite-excerpt">
+            {{ post.content|striptags|truncatewords:30 }}
+        </div>
+        
+        {% if post.tags.all %}
+        <div class="favorite-tags">
+            {% for tag in post.tags.all|slice:":4" %}
+            <a href="{% url 'blog:tag_posts' tag.slug %}" class="favorite-tag">
+                <i class="fas fa-hashtag"></i>{{ tag.name }}
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <div class="favorite-footer">
+            <div class="favorite-meta">
+                <div class="favorite-meta-item">
+                    <i class="far fa-eye"></i>
+                    <span>{{ post.views }} views</span>
+                </div>
+                <div class="favorite-meta-item">
+                    <i class="far fa-heart"></i>
+                    <span>{{ post.likes.count }} likes</span>
+                </div>
+                <div class="favorite-meta-item">
+                    <i class="far fa-comment"></i>
+                    <span>{{ post.comments.count }} comments</span>
+                </div>
+            </div>
+            
+            <div class="favorite-actions">
+                <a href="{% url 'blog:post_detail' post.slug %}" class="favorite-action" title="View Article">
+                    <i class="fas fa-external-link-alt"></i>
+                </a>
+                <span class="favorite-action remove" data-post-id="{{ post.id }}" title="Remove from Favorites">
+                    <i class="fas fa-trash-alt"></i>
+                </span>
             </div>
         </div>
     </div>
+    {% endfor %}
 </div>
-
-<div class="container">
-    <div class="row">
-        <div class="col-lg-10 mx-auto">
-            {% if favorite_posts %}
-                <!-- 收藏文章列表 -->
-                {% for post in favorite_posts %}
-                <div class="card favorite-card shadow-sm">
-                    <div class="card-body">
-                        <div class="d-flex">
-                            <div class="flex-shrink-0 me-3" style="width: 120px; height: 120px; overflow: hidden; border-radius: 0.5rem;">
-                                <img src="https://source.unsplash.com/random/240x240/?blog,{{ post.id }}" alt="{{ post.title }}" width="120" height="120" class="object-fit-cover">
-                            </div>
-                            <div class="flex-grow-1">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <h4 class="mb-0">
-                                        <a href="{% url 'post_detail' post.slug %}" class="text-decoration-none text-dark stretched-link">{{ post.title }}</a>
-                                    </h4>
-                                    <small class="text-muted">{{ post.created_at|date:"Y-m-d" }}</small>
-                                </div>
-                                <div class="mb-3">
-                                    <span class="me-3 text-muted">
-                                        <i class="bi bi-person-circle me-1"></i>{{ post.author.username }}
-                                    </span>
-                                    {% if post.category %}
-                                    <span class="badge bg-primary me-2">
-                                        <i class="bi bi-folder me-1"></i>{{ post.category.name }}
-                                    </span>
-                                    {% endif %}
-                                    {% for tag in post.tags.all|slice:":3" %}
-                                    <span class="badge bg-secondary me-1">
-                                        <i class="bi bi-tag me-1"></i>{{ tag.name }}
-                                    </span>
-                                    {% endfor %}
-                                </div>
-                                <p class="text-muted mb-2">{{ post.content|striptags|truncatechars:150 }}</p>
-                                <div class="d-flex text-muted">
-                                    <span class="me-3"><i class="bi bi-eye me-1"></i>{{ post.views }}</span>
-                                    <span class="me-3"><i class="bi bi-hand-thumbs-up me-1"></i>{{ post.liked_by.count }}</span>
-                                    <span><i class="bi bi-chat-square-text me-1"></i>{{ post.comments.count }}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            {% else %}
-                <!-- 无收藏时显示 -->
-                <div class="no-favorites">
-                    <i class="bi bi-bookmark-heart"></i>
-                    <h3>您还没有收藏任何文章</h3>
-                    <p class="text-muted mb-4">浏览文章并点击收藏按钮，将它们添加到您的收藏列表中</p>
-                    <a href="{% url 'home' %}" class="btn btn-primary btn-lg">
-                        <i class="bi bi-house-door me-2"></i>浏览文章
-                    </a>
-                </div>
-            {% endif %}
-        </div>
+{% else %}
+<div class="empty-state">
+    <div class="empty-state-icon">
+        <i class="far fa-bookmark"></i>
     </div>
+    <h3 class="empty-state-title">No Favorites Yet</h3>
+    <p class="empty-state-message">
+        You haven't saved any articles to your favorites yet. Browse articles and click the bookmark button to add them here.
+    </p>
+    <a href="{% url 'blog:index' %}" class="btn btn-primary">
+        <i class="fas fa-search me-2"></i>Browse Articles
+    </a>
 </div>
+{% endif %}
 
-<a href="{% url 'my_favorites' %}" class="btn btn-primary">我的收藏</a>
+<!-- Pagination -->
+{% if is_paginated %}
+<div class="d-flex justify-content-center mt-4">
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1" aria-label="First">
+                    <i class="fas fa-angle-double-left"></i>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                    <i class="fas fa-angle-left"></i>
+                </a>
+            </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <li class="page-item active">
+                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                </li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                    <i class="fas fa-angle-right"></i>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Last">
+                    <i class="fas fa-angle-double-right"></i>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Handle removing favorites
+    document.querySelectorAll('.favorite-action.remove').forEach(button => {
+        button.addEventListener('click', function() {
+            if (confirm('Are you sure you want to remove this article from your favorites?')) {
+                const postId = this.getAttribute('data-post-id');
+                
+                fetch(`/blog/post/${postId}/favorite/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'removed') {
+                        // Remove the favorite item from the DOM
+                        this.closest('.favorite-item').remove();
+                        
+                        // Update the counter
+                        const countElement = document.querySelector('.favorites-stat-value');
+                        const currentCount = parseInt(countElement.textContent);
+                        countElement.textContent = currentCount - 1;
+                        
+                        // If no more favorites, show empty state
+                        if (currentCount - 1 === 0) {
+                            location.reload();
+                        }
+                    }
+                });
+            }
+        });
+    });
+    
+    // 添加过滤功能
+    document.querySelectorAll('.filter-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            // 移除所有按钮的active类
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // 给当前按钮添加active类
+            this.classList.add('active');
+            
+            const filter = this.getAttribute('data-filter');
+            
+            // 根据筛选值显示/隐藏文章
+            if (filter === 'all') {
+                // 显示所有文章
+                document.querySelectorAll('.favorite-item').forEach(item => {
+                    item.style.display = 'block';
+                });
+            } else if (filter === 'recent') {
+                // 简单实现：显示前5篇文章作为"最近添加"
+                const items = document.querySelectorAll('.favorite-item');
+                items.forEach((item, index) => {
+                    if (index < 5) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            } else if (filter === 'categories') {
+                // 简单实现：为了演示效果，随机显示一些文章
+                document.querySelectorAll('.favorite-item').forEach(item => {
+                    if (Math.random() > 0.5) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            } else if (filter === 'authors') {
+                // 简单实现：为了演示效果，随机显示一些文章
+                document.querySelectorAll('.favorite-item').forEach(item => {
+                    if (Math.random() > 0.5) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            }
+        });
+    });
+    
+    // 添加一些动画效果
+    document.querySelectorAll('.favorite-item').forEach((item, index) => {
+        item.style.animationDelay = `${index * 0.1}s`;
+        item.classList.add('fade-in');
+    });
+</script>
+
+<style>
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .fade-in {
+        animation: fadeIn 0.5s ease-out forwards;
+        opacity: 0;
+    }
+    
+    .empty-state {
+        padding: 4rem;
+        text-align: center;
+        background-color: var(--bg-white);
+        border-radius: var(--border-radius);
+        border: 1px solid var(--card-border);
+        box-shadow: var(--shadow-sm);
+        transition: all 0.3s ease;
+    }
+    
+    .empty-state:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-md);
+    }
+    
+    .empty-state-icon {
+        font-size: 4rem;
+        color: var(--primary-color);
+        margin-bottom: 1.5rem;
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+            opacity: 0.7;
+        }
+        50% {
+            transform: scale(1.1);
+            opacity: 1;
+        }
+        100% {
+            transform: scale(1);
+            opacity: 0.7;
+        }
+    }
+    
+    .empty-state-title {
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: var(--text-primary);
+    }
+    
+    .empty-state-message {
+        color: var(--text-secondary);
+        margin-bottom: 2rem;
+        max-width: 500px;
+        margin-left: auto;
+        margin-right: auto;
+        font-size: 1.1rem;
+        line-height: 1.6;
+    }
+    
+    .empty-state .btn {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .empty-state .btn:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-md);
+    }
+</style>
 {% endblock %} 

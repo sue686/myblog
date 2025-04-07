@@ -1,0 +1,1164 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+{% load json_tags %}
+
+{% block title %}Edit Article - {{ post.title }} - Selwyn's Blog{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.css" rel="stylesheet" type="text/css" />
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+<style>
+    .edit-post-section {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 2rem;
+        position: relative;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .edit-post-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.1);
+        opacity: 0.1;
+    }
+    
+    .form-card {
+        border: none;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        margin-bottom: 2rem;
+        background-color: var(--bg-light);
+        border: 1px solid var(--card-border);
+    }
+    
+    .form-card .card-header {
+        background-color: rgba(0, 0, 0, 0.1);
+        border-bottom: 1px solid var(--card-border);
+        padding: 1.25rem 1.5rem;
+        color: var(--text-color);
+    }
+    
+    .form-control {
+        border-radius: 10px;
+        padding: 0.75rem 1rem;
+        border-color: var(--card-border);
+        background-color: var(--bg-light);
+        color: var(--text-color);
+    }
+    
+    .form-control:focus {
+        box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+        border-color: var(--primary-color);
+        background-color: var(--bg-light);
+    }
+    
+    label {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        color: var(--text-color);
+        display: flex;
+        align-items: center;
+    }
+    
+    label i {
+        margin-right: 0.5rem;
+        color: var(--primary-color);
+    }
+    
+    .note-editor {
+        border-color: var(--card-border) !important;
+        border-radius: 10px !important;
+        background-color: var(--card-bg);
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+    
+    .note-editor:focus-within {
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+    }
+    
+    .note-editor .note-toolbar {
+        background: linear-gradient(to right, var(--primary-color), var(--primary-light));
+        border-bottom: 1px solid var(--card-border);
+        padding: 0.5rem !important;
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
+    }
+    
+    .note-editor .note-toolbar .note-btn {
+        background-color: rgba(255, 255, 255, 0.15);
+        border: none;
+        color: white;
+        border-radius: 5px;
+        margin: 2px;
+        transition: all 0.2s;
+    }
+    
+    .note-editor .note-toolbar .note-btn:hover {
+        background-color: rgba(255, 255, 255, 0.3);
+        transform: translateY(-1px);
+    }
+    
+    .note-editor .note-toolbar .note-btn.active {
+        background-color: rgba(255, 255, 255, 0.3);
+    }
+    
+    .note-editor .note-editing-area {
+        background-color: var(--bg-light);
+        padding: 1rem 0;
+    }
+    
+    .note-statusbar {
+        border-top: 1px solid var(--card-border) !important;
+        background-color: rgba(0, 0, 0, 0.02);
+    }
+    
+    .note-editor .note-statusbar .note-resizebar {
+        background-color: transparent;
+    }
+    
+    /* Select2 美化 */
+    .select2-container .select2-selection--multiple {
+        min-height: 45px;
+        border-radius: 10px;
+        border-color: var(--card-border);
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+    
+    .select2-container--default.select2-container--focus .select2-selection--multiple {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+    }
+    
+    .select2-container--default .select2-selection--multiple .select2-selection__choice {
+        background: var(--gradient-1);
+        border: none;
+        color: white;
+        border-radius: 20px;
+        padding: 0.25rem 0.75rem;
+        margin: 5px 5px 0 0;
+    }
+    
+    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+        color: white;
+        margin-right: 0.5rem;
+        border-right: none;
+    }
+    
+    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+    }
+    
+    .select2-container--default .select2-selection--single {
+        height: 50px;
+        border-radius: 10px;
+        border-color: var(--card-border);
+        background-color: var(--bg-light);
+        display: flex;
+        align-items: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        position: relative;
+        z-index: 1;
+    }
+    
+    .select2-container--default .select2-selection--single:hover {
+        border-color: var(--primary-light);
+    }
+    
+    .select2-container--default.select2-container--open .select2-selection--single {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+    
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 50px;
+        padding-left: 15px;
+        display: flex;
+        align-items: center;
+        color: var(--text-color);
+    }
+    
+    .select2-container--default .select2-selection--single .select2-selection__clear {
+        height: 24px;
+        width: 24px;
+        border-radius: 50%;
+        background-color: rgba(0, 0, 0, 0.1);
+        color: var(--text-muted);
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 10px;
+        transition: all 0.2s;
+    }
+    
+    .select2-container--default .select2-selection--single .select2-selection__clear:hover {
+        background-color: rgba(0, 0, 0, 0.2);
+        color: var(--text-color);
+    }
+    
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 48px;
+        width: 30px;
+    }
+    
+    .select2-container--default .select2-selection--single .select2-selection__arrow b {
+        border-color: var(--primary-color) transparent transparent transparent;
+        border-width: 6px 6px 0 6px;
+        transition: all 0.2s;
+    }
+    
+    .select2-container--default.select2-container--open .select2-selection--single .select2-selection__arrow b {
+        border-color: transparent transparent var(--primary-color) transparent;
+        border-width: 0 6px 6px 6px;
+    }
+    
+    .select2-dropdown {
+        border-color: #5a7db6;
+        background-color: #fff;
+        border-radius: 0 0 0.5rem 0.5rem;
+        overflow: hidden;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        animation: smoothDropdown 0.2s ease-out;
+        border-top: none;
+        margin-top: 0;
+        transform-origin: top center;
+        z-index: 2;
+    }
+    
+    @keyframes smoothDropdown {
+        from {
+            opacity: 0;
+            transform: scaleY(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: scaleY(1);
+        }
+    }
+    
+    .select2-results__option {
+        padding: 12px 15px;
+        transition: all 0.2s;
+        border-left: 3px solid transparent;
+    }
+    
+    .select2-container--default .select2-results__option--highlighted[aria-selected] {
+        background: linear-gradient(to right, rgba(74, 100, 145, 0.2), transparent);
+        color: #333;
+        border-left: 3px solid #4a6491;
+    }
+    
+    .select2-container--default .select2-results__option[aria-selected=true] {
+        background-color: rgba(74, 100, 145, 0.1);
+        color: #4a6491;
+        border-left: 3px solid #4a6491;
+    }
+    
+    .category-icon {
+        width: 24px;
+        height: 24px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(74, 100, 145, 0.1);
+        color: #4a6491;
+        border-radius: 6px;
+        margin-right: 8px;
+        flex-shrink: 0;
+    }
+    
+    .select2-results__option .category-icon {
+        margin-right: 8px;
+    }
+    
+    /* 防止下拉菜单闪烁 */
+    .select2-container {
+        position: relative;
+        box-sizing: border-box;
+        display: inline-block;
+        margin: 0;
+        vertical-align: middle;
+        width: 100% !important;
+    }
+    
+    .select2-container--default.select2-container--focus .select2-selection--single {
+        border-color: #4a6491;
+    }
+    
+    .select2-container--open.select2-container--above .select2-selection--single {
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+        border-bottom-left-radius: 0.5rem;
+        border-bottom-right-radius: 0.5rem;
+    }
+    
+    .select2-container--open.select2-container--below .select2-selection--single {
+        border-top-left-radius: 0.5rem;
+        border-top-right-radius: 0.5rem;
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+    
+    .select2-search--dropdown {
+        padding: 8px;
+        background: #fff;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .select2-container--default .select2-search--dropdown .select2-search__field {
+        border-radius: 5px;
+        border-color: #e0e0e0;
+        padding: 8px 10px;
+        background-color: #fff;
+        color: #333;
+    }
+    
+    .select2-container--default .select2-search--dropdown .select2-search__field:focus {
+        border-color: #4a6491;
+        outline: none;
+    }
+    
+    .select2-container--default.select2-container--disabled .select2-selection--single {
+        background-color: #f8f9fa;
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+    
+    /* 美化表单按钮 */
+    .btn-action-group {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 2rem;
+    }
+    
+    .btn-primary {
+        background: var(--gradient-1);
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 500;
+        color: white;
+        box-shadow: var(--shadow-sm);
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-md);
+        color: white;
+    }
+    
+    .btn-outline-secondary {
+        background: transparent;
+        border: 1px solid var(--card-border);
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 500;
+        color: var(--text-muted);
+        transition: all 0.3s ease;
+    }
+    
+    .btn-outline-secondary:hover {
+        color: var(--text-color);
+        border-color: var(--text-color);
+        background-color: transparent;
+    }
+    
+    /* 高级选项样式 */
+    .advanced-options {
+        margin: 1.5rem 0;
+        position: relative;
+    }
+    
+    .advanced-options-toggle {
+        background: transparent;
+        border: none;
+        color: var(--primary-color);
+        font-weight: 500;
+        font-size: 1rem;
+        padding: 0.5rem;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .advanced-options-toggle i {
+        margin-right: 0.5rem;
+        transition: transform 0.3s ease;
+    }
+    
+    .advanced-options-toggle.collapsed i {
+        transform: rotate(-90deg);
+    }
+    
+    .advanced-options-toggle:hover {
+        color: var(--primary-light);
+    }
+    
+    .advanced-options-content {
+        background-color: rgba(0, 0, 0, 0.02);
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-top: 1rem;
+        border: 1px solid var(--card-border);
+    }
+    
+    /* 内容编辑器美化 */
+    .note-placeholder {
+        color: #adb5bd !important;
+        font-style: italic;
+    }
+    
+    .note-editor .note-codable {
+        background-color: #282c34;
+        color: #abb2bf;
+        border-radius: 0 0 0.5rem 0.5rem;
+    }
+    
+    /* 表单字段动画效果 */
+    .form-field-fade {
+        animation: fieldFadeIn 0.5s ease-out;
+    }
+    
+    @keyframes fieldFadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .category-field-wrapper {
+        position: relative;
+    }
+    
+    .category-field-icon {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #4a6491;
+        z-index: 10;
+    }
+    
+    .has-icon .select2-selection__rendered {
+        padding-left: 40px !important;
+    }
+    
+    /* 编辑器工具栏分组样式 */
+    .note-toolbar .note-btn-group {
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+        padding-right: 5px;
+        margin-right: 5px;
+    }
+    
+    .note-toolbar .note-btn-group:last-child {
+        border-right: none;
+    }
+    
+    /* Tagify custom styles */
+    .tagify {
+        --tag-bg: var(--primary-color);
+        --tag-hover: var(--primary-light);
+        --tag-text-color: #fff;
+        --tag-border-radius: 20px;
+        --tag-pad: 0.5em 1em;
+        --tag-inset-shadow-size: 1.3em;
+        --tags-border-color: var(--card-border);
+        --tags-focus-border-color: var(--primary-color);
+        --tags-hover-border-color: var(--primary-light);
+        
+        width: 100%;
+        max-width: 100%;
+        background: var(--bg-light);
+        border-radius: 10px;
+        padding: 0.5rem;
+        min-height: 45px;
+    }
+    
+    .tagify__tag {
+        margin: 5px 5px 5px 0;
+    }
+    
+    .tagify__tag > div {
+        box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+    }
+    
+    .tagify__tag__removeBtn {
+        color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .tagify__tag__removeBtn:hover {
+        color: white;
+    }
+    
+    .tagify__input {
+        margin: 5px;
+        padding: 0.3em 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- 添加一个隐藏的输入字段来存储标签数据 -->
+<input type="hidden" id="tagsData" value='[{% for tag in post.tags.all %}{"value":"{{ tag.name }}"}{% if not forloop.last %},{% endif %}{% endfor %}]'>
+
+<!-- Edit Article Banner -->
+<section class="edit-post-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center position-relative">
+                <h1 class="display-5 mb-2">Edit Article</h1>
+                <p class="lead">{{ post.title }}</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="container">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <div class="form-card">
+                <div class="card-header">
+                    <h4 class="mb-0">Article Information</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {% for error in form.non_field_errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        
+                        <div class="mb-4 form-field-fade" style="animation-delay: 0.1s">
+                            <label for="{{ form.title.id_for_label }}">
+                                <i class="fas fa-heading"></i> Title
+                            </label>
+                            {{ form.title }}
+                            {% if form.title.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.title.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4 form-field-fade category-field-wrapper" style="animation-delay: 0.2s">
+                            <label for="{{ form.category.id_for_label }}">
+                                <i class="fas fa-folder"></i> Category
+                            </label>
+                            {{ form.category }}
+                            {% if form.category.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.category.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4 form-field-fade" style="animation-delay: 0.3s">
+                            <label for="tags-input">
+                                <i class="fas fa-tags"></i> Tags
+                            </label>
+                            <input id="tags-input" type="text" class="form-control" name="tags" placeholder="Add tags...">
+                            <div class="form-text">Press Enter or comma to add tags</div>
+                            <!-- 添加预设标签区域 -->
+                            <div class="preset-tags mt-2">
+                                <small class="d-block mb-1">Popular tags (click to add):</small>
+                                <div class="preset-tags-container">
+                                    <!-- 预设标签按钮由JavaScript填充 -->
+                                </div>
+                            </div>
+                            {% if form.tags.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.tags.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4 form-field-fade" style="animation-delay: 0.4s">
+                            <label for="{{ form.content.id_for_label }}">
+                                <i class="fas fa-edit"></i> Content
+                            </label>
+                            {{ form.content }}
+                            {% if form.content.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.content.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4 form-field-fade" style="animation-delay: 0.5s">
+                            <div class="form-check">
+                                {{ form.is_published }}
+                                <label class="form-check-label" for="{{ form.is_published.id_for_label }}">
+                                    <i class="fas fa-check-circle me-2"></i> Publish Article
+                                </label>
+                            </div>
+                            <div class="form-text">Uncheck to save as draft</div>
+                        </div>
+                        
+                        <div class="advanced-options form-field-fade" style="animation-delay: 0.6s">
+                            <button type="button" class="advanced-options-toggle" data-bs-toggle="collapse" data-bs-target="#advancedOptionsContent" aria-expanded="false">
+                                <i class="fas fa-caret-down"></i> Advanced Options
+                            </button>
+                            
+                            <div id="advancedOptionsContent" class="collapse advanced-options-content">
+                                <div class="mb-4">
+                                    <label for="{{ form.slug.id_for_label }}">
+                                        <i class="fas fa-link"></i> URL Slug
+                                    </label>
+                                    {{ form.slug }}
+                                    <div class="form-text">URL unique identifier, only letters, numbers, hyphens and underscores.</div>
+                                    {% if form.slug.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.slug.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-4 form-field-fade" style="animation-delay: 0.7s">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save me-2"></i>Save Changes
+                            </button>
+                            <a href="{% url 'blog:post_detail' post.slug %}" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify"></script>
+<script>
+    $(document).ready(function() {
+        $('#id_content').summernote({
+            placeholder: 'Start writing your amazing content...',
+            tabsize: 2,
+            height: 300,
+            toolbar: [
+                ['style', ['style']],
+                ['font', ['bold', 'underline', 'clear']],
+                ['color', ['color']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['table', ['table']],
+                ['insert', ['link', 'picture', 'video']],
+                ['view', ['fullscreen', 'codeview', 'help']]
+            ],
+            callbacks: {
+                onImageUpload: function(files) {
+                    for(let i=0; i < files.length; i++) {
+                        uploadImage(files[i]);
+                    }
+                },
+                onPaste: function (e) {
+                    var clipboardData = e.originalEvent.clipboardData;
+                    if (clipboardData && clipboardData.items && clipboardData.items.length) {
+                        var item = clipboardData.items[0];
+                        if (item.kind === 'file' && item.type.indexOf('image/') !== -1) {
+                            e.preventDefault();
+                            uploadImage(item.getAsFile());
+                        }
+                    }
+                }
+            }
+        });
+        
+        // 自定义编辑器的按钮样式和位置
+        setTimeout(function() {
+            // 给工具栏按钮添加图标
+            $('.note-btn[data-original-title="Bold"]').html('<i class="fas fa-bold"></i>');
+            $('.note-btn[data-original-title="Underline"]').html('<i class="fas fa-underline"></i>');
+            $('.note-btn[data-original-title="Remove Font Style"]').html('<i class="fas fa-eraser"></i>');
+            $('.note-btn[data-original-title="Font Style"]').html('<i class="fas fa-font"></i>');
+            $('.note-btn[data-original-title="Unordered list"]').html('<i class="fas fa-list-ul"></i>');
+            $('.note-btn[data-original-title="Ordered list"]').html('<i class="fas fa-list-ol"></i>');
+            $('.note-btn[data-original-title="Paragraph"]').html('<i class="fas fa-paragraph"></i>');
+            $('.note-btn[data-original-title="Table"]').html('<i class="fas fa-table"></i>');
+            $('.note-btn[data-original-title="Link"]').html('<i class="fas fa-link"></i>');
+            $('.note-btn[data-original-title="Picture"]').html('<i class="fas fa-image"></i>');
+            $('.note-btn[data-original-title="Video"]').html('<i class="fas fa-video"></i>');
+            $('.note-btn[data-original-title="Full Screen"]').html('<i class="fas fa-expand"></i>');
+            $('.note-btn[data-original-title="Code View"]').html('<i class="fas fa-code"></i>');
+            $('.note-btn[data-original-title="Help"]').html('<i class="fas fa-question-circle"></i>');
+        }, 100);
+        
+        // 初始化Select2选择器并添加自定义格式化
+        $('#id_category').select2({
+            placeholder: "Select Category",
+            allowClear: true,
+            theme: "classic",
+            width: '100%',
+            templateResult: formatCategory,
+            templateSelection: formatCategorySelection,
+            dropdownParent: $('.category-field-wrapper'),
+            minimumResultsForSearch: 0,
+            closeOnSelect: true,
+            selectOnClose: true,
+            escapeMarkup: function(markup) {
+                return markup;
+            }
+        });
+        
+        // 添加图标到Select2选中项
+        function formatCategorySelection(category) {
+            if (!category.id) {
+                return category.text;
+            }
+            
+            // 为不同分类使用不同图标
+            let icon = 'folder';
+            let color = '#4a6491';
+            
+            if (category.text.toLowerCase().includes('tech')) {
+                icon = 'laptop-code';
+                color = '#4285F4';
+            } else if (category.text.toLowerCase().includes('food')) {
+                icon = 'utensils';
+                color = '#EA4335';
+            } else if (category.text.toLowerCase().includes('travel')) {
+                icon = 'plane';
+                color = '#34A853';
+            } else if (category.text.toLowerCase().includes('health')) {
+                icon = 'heartbeat';
+                color = '#FBBC05';
+            } else if (category.text.toLowerCase().includes('lifestyle')) {
+                icon = 'coffee';
+                color = '#8E44AD';
+            }
+            
+            var $container = $(
+                '<span><span class="category-icon" style="color: ' + color + ';"><i class="fas fa-' + icon + '"></i></span> ' + category.text + '</span>'
+            );
+            return $container;
+        }
+        
+        // 添加图标到Select2下拉项
+        function formatCategory(category) {
+            if (!category.id) {
+                return category.text;
+            }
+            
+            // 为不同分类使用不同图标
+            let icon = 'folder';
+            let color = '#4a6491';
+            
+            if (category.text.toLowerCase().includes('tech')) {
+                icon = 'laptop-code';
+                color = '#4285F4';
+            } else if (category.text.toLowerCase().includes('food')) {
+                icon = 'utensils';
+                color = '#EA4335';
+            } else if (category.text.toLowerCase().includes('travel')) {
+                icon = 'plane';
+                color = '#34A853';
+            } else if (category.text.toLowerCase().includes('health')) {
+                icon = 'heartbeat';
+                color = '#FBBC05';
+            } else if (category.text.toLowerCase().includes('lifestyle')) {
+                icon = 'coffee';
+                color = '#8E44AD';
+            }
+            
+            var $container = $(
+                '<div><span class="category-icon" style="color: ' + color + ';"><i class="fas fa-' + icon + '"></i></span> ' + category.text + '</div>'
+            );
+            return $container;
+        }
+        
+        // 优化Select2下拉菜单打开和关闭的行为
+        $('#id_category').on('select2:open', function() {
+            // 设置焦点到搜索框
+            setTimeout(function() {
+                $('.select2-search__field').focus();
+            }, 100);
+            
+            // 添加平滑显示动画
+            $('.select2-dropdown').css({
+                'opacity': 0,
+                'transform': 'translateY(-10px)'
+            }).animate({
+                'opacity': 1,
+                'transform': 'translateY(0)'
+            }, 200);
+        });
+        
+        $('#id_category').on('select2:closing', function(e) {
+            // 添加平滑隐藏动画
+            var dropdown = $('.select2-dropdown');
+            dropdown.animate({
+                'opacity': 0,
+                'transform': 'translateY(-10px)'
+            }, 100);
+        });
+        
+        // 禁用标签输入框的Tab键行为，以避免与Select2冲突
+        $('#tags-input').on('keydown', function(e) {
+            if (e.key === 'Tab') {
+                e.stopPropagation();
+            }
+        });
+        
+        // 为Select2添加自定义类
+        $('#id_category').next('.select2-container').find('.select2-selection').addClass('has-icon');
+        
+        // 初始化Tagify并添加已有标签
+        var tagsInput = document.querySelector('#tags-input');
+        var tagify = new Tagify(tagsInput, {
+            backspace: "edit",
+            maxTags: 10,
+            placeholder: "Type tags and press Enter",
+            dropdown: {
+                enabled: 1,
+                maxItems: 10,         // 显示更多建议
+                position: "all",      // 显示在输入框下方
+                closeOnSelect: false, // 选择后不关闭
+                highlightFirst: true, // 默认高亮第一项
+                searchKeys: ["value"], // 搜索键
+                classname: "tags-dropdown",
+                fuzzySearch: true,    // 开启模糊搜索
+                autoFocus: true,      // 自动获取焦点
+                appendTarget: document.body // 添加到body以避免布局问题
+            },
+            enforceWhitelist: false,
+            transformTag: function(tagData) {
+                // 转换标签数据，移除任何非法字符
+                tagData.value = tagData.value
+                    .trim()                   // 移除前后空格
+                    .replace(/\s+/g, ' ')     // 多个空格替换为单个空格
+                    .replace(/[^\w\s-]/g, '') // 只保留字母、数字、空格和连字符
+                    .toLowerCase();           // 转换为小写
+            },
+            validate: function(tagData) {
+                // 验证标签：必须至少有1个字符且不超过20个字符
+                if (!tagData.value.trim() || tagData.value.trim().length < 1) {
+                    return 'Tag cannot be empty';
+                }
+                if (tagData.value.length > 20) {
+                    return 'Tag length cannot exceed 20 characters';
+                }
+                return true;
+            },
+            originalInputValueFormat: function(valuesArr) {
+                // 将标签数组转换为JSON字符串格式
+                return JSON.stringify(valuesArr);
+            }
+        });
+        
+        // 添加常见标签建议
+        const commonTags = [
+            'technology', 'programming', 'web', 'design', 'development',
+            'food', 'travel', 'health', 'lifestyle', 'fitness',
+            'business', 'marketing', 'finance', 'science', 'education',
+            'art', 'music', 'photography', 'sports', 'books'
+        ];
+        
+        // 设置白名单（但不强制使用）
+        tagify.settings.whitelist = commonTags;
+        
+        // 生成预设标签按钮
+        const presetTagsContainer = document.querySelector('.preset-tags-container');
+        if (presetTagsContainer) {
+            commonTags.slice(0, 10).forEach(tag => { // 只显示前10个预设标签
+                const tagBtn = document.createElement('button');
+                tagBtn.type = 'button';
+                tagBtn.className = 'btn btn-sm btn-outline-secondary preset-tag-btn me-1 mb-1';
+                tagBtn.textContent = tag;
+                tagBtn.addEventListener('click', function() {
+                    // 检查标签是否已存在
+                    const existingValues = tagify.value ? tagify.value.map(item => item.value) : [];
+                    if (!existingValues.includes(tag)) {
+                        tagify.addTags([tag]);
+                    }
+                });
+                presetTagsContainer.appendChild(tagBtn);
+            });
+        }
+        
+        // 获取文章已有标签
+        function initExistingTags() {
+            // 从隐藏的输入字段获取标签数据
+            const tagsDataInput = document.getElementById('tagsData');
+            let tags = [];
+            
+            if (tagsDataInput && tagsDataInput.value) {
+                try {
+                    tags = JSON.parse(tagsDataInput.value);
+                } catch (e) {
+                    console.error('无法解析标签数据:', e);
+                }
+            }
+            
+            // 添加已有标签
+            if (tags && tags.length > 0) {
+                tagify.addTags(tags);
+            }
+        }
+        
+        // 调用初始化函数
+        initExistingTags();
+        
+        // 默认情况下点击标签输入框就显示下拉菜单
+        tagsInput.addEventListener('focus', function() {
+            tagify.dropdown.show.call(tagify); // 显示建议下拉菜单
+        });
+        
+        // 监听标签添加事件
+        tagify.on('add', function(e) {
+            console.log('Tag added:', e.detail.data);
+            updateHiddenInput();
+        });
+        
+        // 监听标签移除事件
+        tagify.on('remove', function(e) {
+            console.log('Tag removed:', e.detail.data);
+            updateHiddenInput();
+        });
+        
+        // 监听标签无效事件
+        tagify.on('invalid', function(e) {
+            console.log('Invalid tag:', e.detail.data);
+            console.log('Invalid reason:', e.detail.message);
+            
+            // 显示友好的错误消息
+            const errorEl = document.createElement('div');
+            errorEl.className = 'alert alert-danger alert-dismissible fade show mt-2';
+            errorEl.innerHTML = `
+                <strong>Tag Error:</strong> ${e.detail.message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            
+            // 在标签输入框后插入错误消息
+            const parentEl = tagsInput.parentElement;
+            const existingError = parentEl.querySelector('.alert-danger');
+            if (existingError) {
+                existingError.remove();
+            }
+            parentEl.appendChild(errorEl);
+            
+            // 3秒后自动移除错误消息
+            setTimeout(() => {
+                errorEl.remove();
+            }, 3000);
+        });
+        
+        // 将TagInput的值更新到隐藏字段
+        function updateHiddenInput() {
+            try {
+                const tagsValue = tagify.value;
+                // 如果tagsValue不是数组，则尝试解析
+                let tagsArray;
+                if (typeof tagsValue === 'string') {
+                    tagsArray = JSON.parse(tagsValue);
+                } else {
+                    tagsArray = tagsValue || [];
+                }
+                
+                // 提取所有标签的值，创建简单的值数组
+                const simpleTags = tagsArray.map(tag => tag.value);
+                document.querySelector('#id_tags').value = JSON.stringify(simpleTags);
+                console.log('更新隐藏字段:', document.querySelector('#id_tags').value);
+            } catch (error) {
+                console.error('更新隐藏字段错误:', error);
+            }
+        }
+        
+        // 处理表单提交前的验证
+        $('form').on('submit', function(e) {
+            // 确保标签输入是有效的
+            try {
+                updateHiddenInput();
+                const tagsInput = document.querySelector('#tags-input');
+                const tagsValue = tagsInput.value;
+                
+                if (tagsValue && tagsValue.trim()) {
+                    try {
+                        JSON.parse(tagsValue); // 测试是否为有效的JSON
+                    } catch (jsonError) {
+                        e.preventDefault();
+                        console.error('Invalid JSON in tags:', jsonError);
+                        
+                        // 显示友好的错误消息
+                        const errorEl = document.createElement('div');
+                        errorEl.className = 'alert alert-danger alert-dismissible fade show mt-2';
+                        errorEl.innerHTML = `
+                            <strong>Tags Format Error:</strong> Invalid tag format, please check or clear tags and try again.
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        `;
+                        
+                        // 在标签输入框后插入错误消息
+                        const parentEl = tagsInput.parentElement;
+                        const existingError = parentEl.querySelector('.alert-danger');
+                        if (existingError) {
+                            existingError.remove();
+                        }
+                        parentEl.appendChild(errorEl);
+                    }
+                }
+            } catch (error) {
+                // 如果有错误，阻止提交
+                e.preventDefault();
+                console.error('Error processing tags:', error);
+                
+                // 显示友好的错误消息
+                const errorEl = document.createElement('div');
+                errorEl.className = 'alert alert-danger alert-dismissible fade show mt-2';
+                errorEl.innerHTML = `
+                    <strong>Tags Error:</strong> Error processing tags, please check and try again.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                `;
+                
+                // 在标签输入框后插入错误消息
+                const parentEl = document.querySelector('#tags-input').parentElement;
+                const existingError = parentEl.querySelector('.alert-danger');
+                if (existingError) {
+                    existingError.remove();
+                }
+                parentEl.appendChild(errorEl);
+            }
+        });
+        
+        // 添加样式
+        const styleElement = document.createElement('style');
+        styleElement.textContent = `
+            .preset-tag-btn {
+                transition: all 0.2s;
+                border-radius: 20px;
+                font-size: 0.8rem;
+                padding: 0.2rem 0.8rem;
+            }
+            .preset-tag-btn:hover {
+                background-color: #4a6491;
+                color: white;
+                border-color: #4a6491;
+            }
+            .tagify__dropdown {
+                max-height: 200px;
+                overflow-y: auto;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+                border-radius: 10px;
+                background: white;
+                z-index: 999;
+            }
+            .tagify__dropdown__item {
+                padding: 0.5rem 1rem;
+                border-radius: 0;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+            .tagify__dropdown__item--active {
+                background: #5a7db6;
+                color: white;
+            }
+        `;
+        document.head.appendChild(styleElement);
+
+        // 尝试加载已有标签作为建议
+        fetch('{% url "blog-home" %}')
+            .then(response => {
+                // 这只是一个占位符，在实际实现中我们需要专门的API端点
+                // 前端模拟获取页面上存在的标签
+                setTimeout(function() {
+                    const existingTagElements = document.querySelectorAll('.tag-badge');
+                    if (existingTagElements.length) {
+                        const existingTags = Array.from(existingTagElements).map(el => el.innerText.trim());
+                        const uniqueExistingTags = [...new Set(existingTags)];
+                        
+                        // 合并常用标签和现有标签
+                        const allTags = [...new Set([...commonTags, ...uniqueExistingTags])];
+                        tagify.settings.whitelist = allTags;
+                        console.log('Loaded tag suggestions:', allTags);
+                    }
+                }, 1000);
+            })
+            .catch(error => console.error('Error loading tag suggestions:', error));
+        
+        function uploadImage(file) {
+            var formData = new FormData();
+            formData.append('image', file);
+            
+            $.ajax({
+                url: '{% url "upload_image" %}',
+                method: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                headers: {
+                    'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
+                },
+                success: function(data) {
+                    $('#id_content').summernote('insertImage', data.url);
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.error("Image upload failed:", textStatus, errorThrown);
+                    alert("Image upload failed: " + errorThrown);
+                }
+            });
+        }
+
+        // 标题输入时自动生成slug
+        $('#id_title').on('blur', function() {
+            if ($('#id_slug').val() === '') {
+                let title = $(this).val();
+                if (title) {
+                    // 简单的slug生成
+                    let slug = title.toLowerCase()
+                        .replace(/[^a-z0-9\s-]/g, '')
+                        .replace(/\s+/g, '-')
+                        .replace(/-+/g, '-');
+                    
+                    $('#id_slug').val(slug);
+                }
+            }
+        });
+
+        // 高级选项切换状态
+        $('.advanced-options-toggle').on('click', function() {
+            $(this).toggleClass('collapsed');
+        });
+    });
+</script>
+{% endblock %} 

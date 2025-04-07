@@ -1,0 +1,42 @@
+/* 
+ * Search Box Style Fix
+ * This file addresses the issue with search box overlapping with background
+ */
+
+/* Navbar search box styles */
+.navbar .input-group {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+}
+
+.navbar .input-group .form-control {
+    border: none;
+    background-color: white;
+    padding: 0.5rem 1rem;
+    box-shadow: none;
+}
+
+.navbar .input-group .btn-outline-light {
+    background-color: #4f46e5;
+    border: none;
+    color: white;
+}
+
+.navbar .input-group .btn-outline-light:hover {
+    background-color: #4338ca;
+}
+
+/* Responsive adjustments */
+@media (max-width: 767.98px) {
+    .navbar .d-flex.me-auto {
+        margin: 0.5rem 0;
+        width: 100%;
+    }
+    
+    .navbar .input-group {
+        width: 100%;
+    }
+} 

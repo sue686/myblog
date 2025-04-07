@@ -1,61 +1,592 @@
 {% extends 'blog/base.html' %}
 
-{% block title %}{{ profile_user.username }}的个人主页 - 我的博客{% endblock %}
+{% block title %}{{ profile_user.username }}'s Profile - Selwyn's Blog{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+<style>
+    .profile-header {
+        background: linear-gradient(135deg, #4e73df, #2c3e50);
+        color: white;
+        padding: 4rem 0;
+        margin-bottom: 3rem;
+        position: relative;
+        border-radius: 0 0 20px 20px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+    
+    .profile-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('https://source.unsplash.com/random/1200x600/?pattern') center/cover;
+        opacity: 0.1;
+        border-radius: 0 0 20px 20px;
+    }
+    
+    .profile-avatar {
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        border: 6px solid white;
+        box-shadow: 0 5px 25px rgba(0,0,0,0.15);
+        object-fit: cover;
+        transition: all 0.3s ease;
+    }
+    
+    .avatar-placeholder {
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        background-color: #4e73df;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 72px;
+        color: white;
+        border: 6px solid white;
+        box-shadow: 0 5px 25px rgba(0,0,0,0.15);
+        transition: all 0.3s ease;
+    }
+    
+    .avatar-placeholder:hover {
+        transform: scale(1.05);
+        box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+    }
+    
+    .profile-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        margin-bottom: 2rem;
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+    
+    .profile-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.12);
+    }
+    
+    .profile-card .card-title {
+        font-weight: 700;
+        color: #2c3e50;
+        display: flex;
+        align-items: center;
+    }
+    
+    .profile-card .card-title i {
+        margin-right: 0.5rem;
+        color: #4e73df;
+    }
+    
+    .stat-card {
+        border: none;
+        border-radius: 16px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        background: #f8f9fa;
+        padding: 1.25rem 0.75rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 25px rgba(0,0,0,0.1);
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    }
+    
+    .stat-card h3 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #3a56b0;
+        margin-bottom: 0.3rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        line-height: 1;
+    }
+    
+    .stat-card p {
+        text-transform: uppercase;
+        font-weight: 600;
+        letter-spacing: 1px;
+        color: #6c757d;
+        margin: 0;
+        font-size: 0.9rem;
+    }
+    
+    .stat-icon {
+        margin-bottom: 0.5rem;
+        color: #4e73df;
+        font-size: 1.2rem;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    /* Article title styles */
+    .articles-title {
+        font-size: 1.8rem;
+        color: #2c3e50;
+        margin-bottom: 0;
+        position: relative;
+    }
+    
+    .articles-title i {
+        color: #4e73df;
+    }
+    
+    /* Article card styles */
+    .post-item {
+        animation: fadeInUp 0.5s ease-out forwards;
+        animation-fill-mode: both;
+        opacity: 0;
+    }
+    
+    /* Set different delays for each card */
+    .post-grid .post-item:nth-child(1) { animation-delay: 0.1s; }
+    .post-grid .post-item:nth-child(2) { animation-delay: 0.2s; }
+    .post-grid .post-item:nth-child(3) { animation-delay: 0.3s; }
+    .post-grid .post-item:nth-child(4) { animation-delay: 0.4s; }
+    .post-grid .post-item:nth-child(5) { animation-delay: 0.5s; }
+    .post-grid .post-item:nth-child(6) { animation-delay: 0.6s; }
+    .post-grid .post-item:nth-child(7) { animation-delay: 0.7s; }
+    .post-grid .post-item:nth-child(8) { animation-delay: 0.8s; }
+    
+    /* Fade-in animation */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .post-card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+        position: relative;
+        background-color: #fff;
+    }
+    
+    .post-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.12);
+    }
+    
+    .post-card .card-body {
+        padding: 1.5rem;
+    }
+    
+    .post-card:hover::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 5px;
+        height: 100%;
+        background: linear-gradient(to bottom, #4e73df, #2c3e50);
+    }
+    
+    .post-card h3 {
+        font-weight: 700;
+        margin-bottom: 1rem;
+        font-size: 1.5rem;
+        line-height: 1.4;
+    }
+    
+    .post-card h3 a {
+        color: #2c3e50;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+    
+    .post-card h3 a:hover {
+        color: #4e73df;
+    }
+    
+    .text-meta {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    
+    .text-meta i {
+        color: #4e73df;
+        margin-right: 0.25rem;
+    }
+    
+    .badge.tag-badge {
+        background-color: rgba(78, 115, 223, 0.1);
+        color: #4e73df;
+        font-weight: 500;
+        padding: 0.5rem 0.75rem;
+        border-radius: 50px;
+        transition: all 0.3s ease;
+    }
+    
+    .badge.tag-badge:hover {
+        background-color: #4e73df;
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .btn-main {
+        background: linear-gradient(135deg, #4e73df, #2c3e50);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .btn-main:hover {
+        background: linear-gradient(135deg, #3d5ebd, #1e2b3a);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        color: white;
+    }
+    
+    .contact-list li {
+        padding: 0.75rem 0;
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .contact-list li:last-child {
+        border-bottom: none;
+    }
+    
+    .contact-list li i {
+        width: 25px;
+        font-size: 1.2rem;
+    }
+    
+    .contact-list a {
+        color: #4e73df;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+    
+    .contact-list a:hover {
+        color: #2c3e50;
+        text-decoration: underline;
+    }
+    
+    .pagination .page-link {
+        border: none;
+        border-radius: 10px;
+        margin: 0 0.25rem;
+        color: #4e73df;
+        transition: all 0.3s ease;
+    }
+    
+    .pagination .page-link:hover {
+        background-color: rgba(78, 115, 223, 0.1);
+        color: #4e73df;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 10px rgba(0,0,0,0.05);
+    }
+    
+    .pagination .page-item.active .page-link {
+        background-color: #4e73df;
+        color: white;
+        box-shadow: 0 5px 10px rgba(78, 115, 223, 0.3);
+    }
+    
+    .no-posts-container {
+        text-align: center;
+        padding: 4rem 0;
+        background-color: #fff;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    }
+    
+    .no-posts-icon {
+        font-size: 5rem;
+        color: #e0e0e0;
+        margin-bottom: 1.5rem;
+    }
+    
+    @keyframes gradientAnimation {
+        0% {
+            background-position: 0% 50%;
+        }
+        50% {
+            background-position: 100% 50%;
+        }
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+    
+    .stat-card:hover h3 {
+        background: linear-gradient(45deg, #4e73df, #8860d0);
+        background-size: 200% 200%;
+        animation: gradientAnimation 3s ease infinite;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    /* Post grid layout */
+    .post-grid {
+        margin-top: 1rem;
+    }
+    
+    .post-card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        margin-bottom: 0; /* 移除底部外边距，由 col 类控制 */
+        box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+        position: relative;
+        background-color: #fff;
+        height: 100%;
+    }
+    
+    @media (max-width: 767.98px) {
+        .post-grid .col-md-6 {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+    }
+    
+    .post-card .card-title {
+        font-size: 1.3rem;
+        line-height: 1.4;
+        margin-bottom: 0.75rem;
+    }
+    
+    .post-card .card-title a {
+        color: #2c3e50;
+        text-decoration: none;
+        transition: color 0.3s ease;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .tags-container {
+        display: flex;
+        flex-wrap: wrap;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-4">
-        <div class="card mb-4">
-            <div class="card-body text-center">
-                {% if profile_user.avatar %}
-                    <img src="{{ profile_user.avatar.url }}" class="rounded-circle mb-3" width="150" height="150" alt="{{ profile_user.username }}">
-                {% else %}
-                    <i class="bi bi-person-circle display-1 mb-3"></i>
-                {% endif %}
-                <h3 class="card-title">{{ profile_user.username }}</h3>
-                {% if profile_user.bio %}
-                    <p class="card-text">{{ profile_user.bio }}</p>
+<!-- Profile Header -->
+<section class="profile-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8 mx-auto text-center position-relative">
+                <div class="mb-4 fade-in-up">
+                    <div class="avatar-placeholder mx-auto">
+                        <span style="text-transform: uppercase;">{{ profile_user.username|slice:":1" }}</span>
+                    </div>
+                </div>
+                <h1 class="display-4 fw-bold mb-2 fade-in-up delay-1">{{ profile_user.username }}</h1>
+                {% if profile_user.profile.bio %}
+                    <p class="lead mb-4 fade-in-up delay-2">{{ profile_user.profile.bio }}</p>
                 {% endif %}
                 {% if user == profile_user %}
-                    <a href="{% url 'edit_profile' %}" class="btn btn-primary">编辑资料</a>
+                    <a href="{% url 'users:edit_profile' %}" class="btn btn-main btn-lg fade-in-up delay-3">
+                        <i class="fas fa-user-edit me-2"></i>Edit Profile
+                    </a>
                 {% endif %}
             </div>
         </div>
     </div>
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-body">
-                <h2 class="card-title mb-4">发布的文章</h2>
-                {% for post in posts %}
-                    <div class="post-item mb-4">
-                        <h3>
-                            <a href="{% url 'post_detail' post.pk %}" class="text-decoration-none">{{ post.title }}</a>
-                        </h3>
-                        <div class="post-meta mb-2">
-                            <i class="bi bi-calendar"></i> {{ post.created_at|date:"Y-m-d H:i" }}
-                            {% if post.category %}
-                                | <i class="bi bi-folder"></i> {{ post.category.name }}
-                            {% endif %}
+</section>
+
+<div class="container">
+    <div class="row">
+        <!-- Statistics Cards -->
+        <div class="col-lg-4">
+            <div class="profile-card mb-4 fade-in-up">
+                <div class="p-4">
+                    <h4 class="card-title mb-4"><i class="fas fa-chart-line"></i>Statistics</h4>
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-file-alt"></i>
+                                </div>
+                                <h3>{{ posts_count }}</h3>
+                                <p>POSTS</p>
+                            </div>
                         </div>
-                        <p class="post-excerpt">{{ post.content|truncatewords:50 }}</p>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <a href="{% url 'post_detail' post.pk %}" class="btn btn-primary">阅读更多</a>
-                            <div class="text-muted">
-                                <small>
-                                    <i class="bi bi-eye"></i> {{ post.views }} |
-                                    <i class="bi bi-heart"></i> {{ post.liked_by.count }} |
-                                    <i class="bi bi-bookmark"></i> {{ post.favorited_by.count }} |
-                                    <i class="bi bi-chat"></i> {{ post.comments.count }}
-                                </small>
+                        <div class="col-4">
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-heart"></i>
+                                </div>
+                                <h3>{{ total_likes }}</h3>
+                                <p>LIKES</p>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-bookmark"></i>
+                                </div>
+                                <h3>{{ total_favorites }}</h3>
+                                <p>FAVORITES</p>
                             </div>
                         </div>
                     </div>
-                {% empty %}
-                    <div class="alert alert-info">
-                        暂无发布的文章
-                    </div>
-                {% endfor %}
+                </div>
             </div>
+            
+            <div class="profile-card mb-4 fade-in-up delay-1">
+                <div class="p-4">
+                    <h4 class="card-title mb-3"><i class="fas fa-address-card"></i>Contact Info</h4>
+                    <ul class="list-unstyled contact-list">
+                        <li>
+                            <i class="fas fa-envelope"></i>
+                            <span>{{ profile_user.email }}</span>
+                        </li>
+                        {% if profile_user.profile.website %}
+                        <li>
+                            <i class="fas fa-globe"></i>
+                            <a href="{{ profile_user.profile.website }}" target="_blank">{{ profile_user.profile.website }}</a>
+                        </li>
+                        {% endif %}
+                        <li>
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>Joined on {{ profile_user.date_joined|date:"M d, Y" }}</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Posts List -->
+        <div class="col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold articles-title">
+                    <i class="fas fa-newspaper me-2"></i>
+                    Published Articles
+                </h2>
+                {% if user == profile_user %}
+                <a href="{% url 'blog:post_create' %}" class="btn btn-main">
+                    <i class="fas fa-plus-circle me-2"></i>Create New Post
+                </a>
+                {% endif %}
+            </div>
+            
+            {% if posts %}
+                <div class="row post-grid">
+                    {% for post in posts %}
+                        <div class="col-md-6 mb-4 post-item">
+                            <div class="post-card h-100">
+                                <div class="card-body d-flex flex-column">
+                                    <h3 class="card-title">
+                                        <a href="{% url 'blog:post_detail' post.slug %}">{{ post.title }}</a>
+                                    </h3>
+                                    <div class="text-meta mb-3">
+                                        <span class="me-3"><i class="fas fa-calendar-day"></i>{{ post.created_at|date:"M d, Y" }}</span>
+                                        {% if post.category %}
+                                        <span class="me-3">
+                                            <i class="fas fa-folder"></i>
+                                            <a href="{% url 'blog:index' %}?category={{ post.category.id }}" class="text-decoration-none text-meta">{{ post.category.name }}</a>
+                                        </span>
+                                        {% endif %}
+                                        <span class="me-3"><i class="fas fa-eye"></i>{{ post.views }} views</span>
+                                    </div>
+                                    
+                                    <p class="card-text mb-3 flex-grow-1">{{ post.content|striptags|truncatewords:20 }}</p>
+                                    
+                                    <div class="mt-auto">
+                                        <div class="tags-container mb-2">
+                                            {% for tag in post.tags.all|slice:":3" %}
+                                            <a href="{% url 'blog:index' %}?tag={{ tag.id }}" class="badge tag-badge text-decoration-none me-1">
+                                                <i class="fas fa-tag me-1"></i>{{ tag.name }}
+                                            </a>
+                                            {% endfor %}
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center text-meta">
+                                            <a href="{% url 'blog:post_detail' post.slug %}" class="btn btn-sm btn-outline-primary">Read More</a>
+                                            <div>
+                                                <span class="me-2"><i class="fas fa-heart"></i> {{ post.likes.count }}</span>
+                                                <span class="me-2"><i class="fas fa-bookmark"></i> {{ post.favorites.count }}</span>
+                                                <span><i class="fas fa-comments"></i> {{ post.comments.count }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Pagination -->
+                {% if posts.has_other_pages %}
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if posts.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1"><i class="fas fa-angle-double-left"></i></a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ posts.previous_page_number }}"><i class="fas fa-angle-left"></i></a>
+                        </li>
+                        {% endif %}
+                        
+                        {% for num in posts.paginator.page_range %}
+                            {% if posts.number == num %}
+                                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                            {% elif num > posts.number|add:'-3' and num < posts.number|add:'3' %}
+                                <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if posts.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ posts.next_page_number }}"><i class="fas fa-angle-right"></i></a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ posts.paginator.num_pages }}"><i class="fas fa-angle-double-right"></i></a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            {% else %}
+                <!-- No posts message -->
+                <div class="no-posts-container">
+                    <i class="fas fa-newspaper no-posts-icon"></i>
+                    <h3 class="fw-bold mt-4">No posts yet</h3>
+                    {% if user == profile_user %}
+                    <p class="text-muted mb-4">Share your first post with the world!</p>
+                    <a href="{% url 'blog:post_create' %}" class="btn btn-main btn-lg">
+                        <i class="fas fa-plus-circle me-2"></i>Create Post
+                    </a>
+                    {% else %}
+                    <p class="text-muted">This user hasn't published any posts yet.</p>
+                    {% endif %}
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>

@@ -1,0 +1,43 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="stylesheet" type="text/css" href="{% static 'admin/css/custom/custom_admin.css' %}" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+    <a href="{% url 'admin:index' %}">
+        <i class="bi bi-journal-code"></i> 博客管理系统
+    </a>
+</h1>
+{% endblock %}
+
+{% block welcome-msg %}
+    <span class="user-info"><i class="bi bi-person-circle"></i> {{ user.get_username }}</span>
+{% endblock %}
+
+{% block userlinks %}
+    {% if site_url %}
+        <a href="{{ site_url }}" class="viewsite-link">
+            <i class="bi bi-house-door"></i> 网站首页
+        </a>
+    {% endif %}
+    {% if user.is_active and user.is_staff %}
+        {% url 'django-admindocs-docroot' as docsroot %}
+        {% if docsroot %}
+            <a href="{{ docsroot }}"><i class="bi bi-book"></i> 文档</a>
+        {% endif %}
+    {% endif %}
+    {% if user.has_usable_password %}
+        <a href="{% url 'admin:password_change' %}"><i class="bi bi-key"></i> 修改密码</a>
+    {% endif %}
+    <a href="{% url 'admin:logout' %}"><i class="bi bi-box-arrow-right"></i> 退出登录</a>
+    {% if request.user.is_superuser %}
+        <a href="{% url 'admin_dashboard' %}"><i class="bi bi-speedometer2"></i> 仪表盘</a>
+    {% endif %}
+{% endblock %} 

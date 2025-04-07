@@ -1,0 +1,336 @@
+{% extends "blog/base.html" %}
+{% load static %}
+
+{% block title %}{{ category.name }} - Selwyn's Blog{% endblock %}
+
+{% block extra_css %}
+<style>
+    .category-header {
+        background: linear-gradient(135deg, rgba(115, 113, 252, 0.2) 0%, rgba(56, 182, 255, 0.1) 100%);
+        border-radius: 20px;
+        padding: 3rem 2rem;
+        margin-bottom: 3rem;
+        position: relative;
+        overflow: hidden;
+        text-align: center;
+        border: 1px solid var(--card-border);
+    }
+    
+    .category-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3z' fill='%237371fc' fill-opacity='0.2'/%3E%3C/svg%3E");
+        opacity: 0.5;
+        z-index: -1;
+    }
+    
+    .category-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: var(--text-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .category-title i {
+        margin-right: 0.75rem;
+        color: var(--primary-color);
+    }
+    
+    .category-subtitle {
+        color: var(--text-muted);
+        max-width: 600px;
+        margin: 0 auto 1rem;
+    }
+    
+    .category-count {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background-color: var(--primary-color);
+        color: white;
+        border-radius: 50px;
+        padding: 0.35rem 1rem;
+        font-size: 0.9rem;
+        font-weight: 500;
+        margin-left: 1rem;
+    }
+    
+    .post-card {
+        background-color: var(--card-bg);
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid var(--card-border);
+        transition: all 0.3s ease;
+        height: 100%;
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+    
+    .post-card:hover {
+        transform: translateY(-10px);
+        box-shadow: var(--shadow-md);
+        border-color: var(--primary-color);
+    }
+    
+    .post-card-img {
+        height: 200px;
+        overflow: hidden;
+    }
+    
+    .post-card-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    
+    .post-card:hover .post-card-img img {
+        transform: scale(1.1);
+    }
+    
+    .post-card-body {
+        padding: 1.5rem;
+    }
+    
+    .post-card-title {
+        font-size: 1.25rem;
+        margin-bottom: 0.75rem;
+        font-weight: 600;
+        color: var(--text-color);
+        transition: all 0.3s ease;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        line-height: 1.4;
+    }
+    
+    .post-card:hover .post-card-title {
+        color: var(--primary-color);
+    }
+    
+    .post-card-excerpt {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        margin-bottom: 1.5rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        line-height: 1.6;
+    }
+    
+    .post-card-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 1rem;
+        border-top: 1px solid var(--card-border);
+    }
+    
+    .post-card-date {
+        color: var(--text-muted);
+        font-size: 0.85rem;
+    }
+    
+    .post-card-stats {
+        display: flex;
+        gap: 1rem;
+        color: var(--text-muted);
+        font-size: 0.85rem;
+    }
+    
+    .post-card-stat {
+        display: flex;
+        align-items: center;
+    }
+    
+    .post-card-stat i {
+        margin-right: 0.25rem;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background-color: var(--card-bg);
+        border-radius: 16px;
+        border: 1px solid var(--card-border);
+        margin-bottom: 2rem;
+    }
+    
+    .empty-state-icon {
+        font-size: 3.5rem;
+        margin-bottom: 1.5rem;
+        color: var(--text-muted);
+    }
+    
+    .empty-state-title {
+        font-size: 1.75rem;
+        margin-bottom: 1rem;
+        color: var(--text-color);
+    }
+    
+    .empty-state-desc {
+        color: var(--text-muted);
+        margin-bottom: 2rem;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    /* 添加排序控件样式 */
+    .sort-controls {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 1.5rem;
+        padding: 0.75rem 1rem;
+        background-color: var(--bg-white);
+        border-radius: 12px;
+        border: 1px solid var(--card-border);
+    }
+    
+    .sort-label {
+        display: flex;
+        align-items: center;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        margin-right: 0.75rem;
+    }
+    
+    .sort-label i {
+        margin-right: 0.4rem;
+    }
+    
+    .sort-options {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .sort-option {
+        padding: 0.35rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        background-color: var(--bg-gray-100);
+        color: var(--text-secondary);
+        transition: all 0.2s ease;
+        cursor: pointer;
+        border: 1px solid transparent;
+    }
+    
+    .sort-option:hover {
+        background-color: var(--bg-gray-200);
+        transform: translateY(-1px);
+    }
+    
+    .sort-option.active {
+        background-color: var(--primary-bg);
+        color: var(--primary-color);
+        border-color: var(--primary-light);
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Category Header -->
+<div class="category-header">
+    <div class="container">
+        <h1 class="category-title">
+            <i class="fas fa-folder"></i> {{ category.name }}
+            <span class="category-count">{{ posts.paginator.count }} articles</span>
+        </h1>
+        <p class="category-subtitle">Browse all articles in "{{ category.name }}" category</p>
+    </div>
+</div>
+
+<!-- Sort Controls -->
+<div class="container">
+    <div class="sort-controls">
+        <div class="sort-label">
+            <i class="fas fa-sort"></i> Sort by:
+        </div>
+        <div class="sort-options">
+            <a href="?sort=newest" class="sort-option {% if current_sort == 'newest' or not current_sort %}active{% endif %}">
+                Newest
+            </a>
+            <a href="?sort=popular" class="sort-option {% if current_sort == 'popular' %}active{% endif %}">
+                Popular
+            </a>
+            <a href="?sort=comments" class="sort-option {% if current_sort == 'comments' %}active{% endif %}">
+                Most Comments
+            </a>
+            <a href="?sort=likes" class="sort-option {% if current_sort == 'likes' %}active{% endif %}">
+                Most Likes
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Post List -->
+<div class="container">
+    <div class="row">
+        {% if posts.object_list %}
+            {% for post in posts %}
+            <div class="col-md-6 mb-4">
+                <div class="card h-100 shadow-sm post-card">
+                    {% if post.image %}
+                    <div class="post-card-img">
+                        <img src="{{ post.image.url }}" alt="{{ post.title }}">
+                    </div>
+                    {% endif %}
+                    <div class="post-card-body">
+                        <h3 class="post-card-title">
+                            <a href="{% url 'blog:post_detail' post.slug %}">{{ post.title }}</a>
+                        </h3>
+                        <div class="post-card-excerpt">
+                            {{ post.content|striptags|truncatewords:25 }}
+                        </div>
+                        <div class="post-card-meta">
+                            <div class="post-card-stats">
+                                <div class="post-card-stat">
+                                    <i class="fas fa-heart"></i> {{ post.likes.count }}
+                                </div>
+                                <div class="post-card-stat">
+                                    <i class="fas fa-comment"></i> {{ post.comments.count }}
+                                </div>
+                                <div class="post-card-stat">
+                                    <i class="fas fa-eye"></i> {{ post.views }}
+                                </div>
+                            </div>
+                            <div class="post-card-date">
+                                <i class="fas fa-calendar-alt"></i> 
+                                {% with year=post.created_at|date:"Y" month=post.created_at|date:"m" day=post.created_at|date:"d" %}
+                                {{ year }}-{{ month }}-{{ day }}
+                                {% endwith %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <i class="fas fa-folder-open"></i>
+                    </div>
+                    <h3 class="empty-state-title">No Articles Found</h3>
+                    <p class="empty-state-desc">
+                        There are currently no articles in the {{ category.name }} category. Check back later or browse other categories.
+                    </p>
+                    <a href="{% url 'blog:index' %}" class="btn btn-primary">
+                        <i class="fas fa-home me-2"></i>Return to Home
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

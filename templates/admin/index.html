@@ -1,0 +1,231 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}{{ block.super }}
+<link rel="stylesheet" type="text/css" href="{% static "admin/css/dashboard.css" %}">
+<style>
+  .dashboard-header {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  }
+  
+  .welcome-message {
+    font-size: 1.3rem;
+    color: #2c3e50;
+    margin-bottom: 10px;
+  }
+  
+  .dashboard-stats {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0 -10px;
+    margin-bottom: 20px;
+  }
+  
+  .stat-box {
+    flex: 1;
+    min-width: 200px;
+    background: white;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    display: flex;
+    align-items: center;
+  }
+  
+  .stat-icon {
+    width: 50px;
+    height: 50px;
+    background: rgba(52, 152, 219, 0.1);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+  }
+  
+  .stat-icon i {
+    font-size: 24px;
+    color: #3498db;
+  }
+  
+  .stat-content h3 {
+    font-size: 24px;
+    margin: 0;
+    color: #2c3e50;
+  }
+  
+  .stat-content p {
+    margin: 5px 0 0;
+    color: #7f8c8d;
+    font-size: 14px;
+  }
+  
+  .module {
+    background: white;
+  }
+  
+  .module h2 {
+    display: flex;
+    align-items: center;
+  }
+  
+  .module h2 i {
+    margin-right: 8px;
+  }
+  
+  .module table {
+    width: 100%;
+  }
+  
+  .module tbody tr:hover {
+    background-color: rgba(52, 152, 219, 0.05);
+  }
+</style>
+{% endblock %}
+
+{% block coltype %}colMS{% endblock %}
+
+{% block bodyclass %}{{ block.super }} dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+  <div class="welcome-message">{{ user.username }}，欢迎使用博客管理系统</div>
+  <p>今天是 {% now "Y年m月d日" %}，您可以管理博客内容、用户和设置。</p>
+</div>
+
+<div class="dashboard-stats">
+  <div class="stat-box">
+    <div class="stat-icon">
+      <i class="bi bi-file-richtext"></i>
+    </div>
+    <div class="stat-content">
+      <h3>{{ post_count|default:"0" }}</h3>
+      <p>文章数量</p>
+    </div>
+  </div>
+  
+  <div class="stat-box">
+    <div class="stat-icon">
+      <i class="bi bi-people"></i>
+    </div>
+    <div class="stat-content">
+      <h3>{{ user_count|default:"0" }}</h3>
+      <p>用户数量</p>
+    </div>
+  </div>
+  
+  <div class="stat-box">
+    <div class="stat-icon">
+      <i class="bi bi-chat-left-text"></i>
+    </div>
+    <div class="stat-content">
+      <h3>{{ comment_count|default:"0" }}</h3>
+      <p>评论数量</p>
+    </div>
+  </div>
+  
+  <div class="stat-box">
+    <div class="stat-icon">
+      <i class="bi bi-eye"></i>
+    </div>
+    <div class="stat-content">
+      <h3>{{ total_views|default:"0" }}</h3>
+      <p>总浏览量</p>
+    </div>
+  </div>
+</div>
+
+<div id="content-main">
+{% if app_list %}
+    {% for app in app_list %}
+        <div class="app-{{ app.app_label }} module">
+        <table>
+        <caption>
+            <h2>
+                {% if app.app_label == 'blog' %}
+                    <i class="bi bi-journal-richtext"></i>
+                {% elif app.app_label == 'users' %}
+                    <i class="bi bi-people"></i>
+                {% elif app.app_label == 'auth' %}
+                    <i class="bi bi-shield-lock"></i>
+                {% elif app.app_label == 'admin' %}
+                    <i class="bi bi-gear"></i>
+                {% else %}
+                    <i class="bi bi-box"></i>
+                {% endif %}
+                {{ app.name }}
+            </h2>
+        </caption>
+        {% for model in app.models %}
+            <tr class="model-{{ model.object_name|lower }}">
+            {% if model.admin_url %}
+                <th scope="row"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>
+            {% else %}
+                <th scope="row">{{ model.name }}</th>
+            {% endif %}
+
+            {% if model.add_url %}
+                <td><a href="{{ model.add_url }}" class="addlink">{% translate 'Add' %}</a></td>
+            {% else %}
+                <td>&nbsp;</td>
+            {% endif %}
+
+            {% if model.admin_url %}
+                {% if model.view_only %}
+                <td><a href="{{ model.admin_url }}" class="viewlink">{% translate 'View' %}</a></td>
+                {% else %}
+                <td><a href="{{ model.admin_url }}" class="changelink">{% translate 'Change' %}</a></td>
+                {% endif %}
+            {% else %}
+                <td>&nbsp;</td>
+            {% endif %}
+            </tr>
+        {% endfor %}
+        </table>
+        </div>
+    {% endfor %}
+{% else %}
+    <p>{% translate "您没有权限查看或编辑任何内容" %}</p>
+{% endif %}
+</div>
+{% endblock %}
+
+{% block sidebar %}
+<div id="content-related">
+    <div class="module" id="recent-actions-module">
+        <h2>
+            <i class="bi bi-clock-history"></i>
+            {% translate 'Recent actions' %}
+        </h2>
+        <h3>{% translate 'My actions' %}</h3>
+            {% load log %}
+            {% get_admin_log 10 as admin_log for_user user %}
+            {% if not admin_log %}
+            <p>{% translate 'None available' %}</p>
+            {% else %}
+            <ul class="actionlist">
+            {% for entry in admin_log %}
+            <li class="{% if entry.is_addition %}addlink{% endif %}{% if entry.is_change %}changelink{% endif %}{% if entry.is_deletion %}deletelink{% endif %}">
+                {% if entry.is_deletion or not entry.get_admin_url %}
+                    {{ entry.object_repr }}
+                {% else %}
+                    <a href="{{ entry.get_admin_url }}">{{ entry.object_repr }}</a>
+                {% endif %}
+                <br>
+                {% if entry.content_type %}
+                    <span class="mini quiet">{% filter capfirst %}{{ entry.content_type.name }}{% endfilter %}</span>
+                {% else %}
+                    <span class="mini quiet">{% translate 'Unknown content' %}</span>
+                {% endif %}
+            </li>
+            {% endfor %}
+            </ul>
+            {% endif %}
+    </div>
+</div>
+{% endblock %} 

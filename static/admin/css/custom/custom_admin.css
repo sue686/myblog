@@ -1,0 +1,169 @@
+/* 自定义管理界面样式 */
+
+/* 全局样式调整 */
+:root {
+  --primary: #2c3e50;
+  --secondary: #3498db;
+  --accent: #e74c3c;
+  --primary-fg: #fff;
+  
+  --header-bg: #2c3e50;
+  --header-color: #ecf0f1;
+  --header-link-color: #3498db;
+  --header-branding-color: #ecf0f1;
+  
+  --body-bg: #f8f9fa;
+  --body-quiet-color: #95a5a6;
+  --body-loud-color: #2c3e50;
+  
+  --link-fg: #3498db;
+  --link-hover-color: #2980b9;
+  
+  --breadcrumbs-bg: #34495e;
+  --breadcrumbs-fg: #bdc3c7;
+  --breadcrumbs-link-fg: #e0e0e0;
+  --breadcrumbs-link-hover-fg: #fff;
+  
+  --hairline-color: #ddd;
+  --border-color: #e1e1e1;
+  
+  --darkened-bg: #f0f0f0;
+  --object-tools-bg: #e74c3c;
+  --object-tools-hover-bg: #c0392b;
+  --object-tools-fg: #fff;
+}
+
+/* 页面布局优化 */
+body {
+  font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+#header {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+#header #site-name {
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  font-size: 1.8rem;
+}
+
+#user-tools {
+  font-size: 0.8rem;
+}
+
+#user-tools a {
+  border-bottom: none;
+  text-decoration: none;
+  margin-left: 15px;
+  padding: 5px 10px;
+  border-radius: 15px;
+  transition: background-color 0.3s;
+}
+
+#user-tools a:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* 列表页面美化 */
+#changelist table {
+  border-radius: 5px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+#changelist thead th {
+  background-color: #3498db;
+  color: white;
+  padding: 12px 5px;
+}
+
+#changelist tbody tr:hover {
+  background-color: rgba(52, 152, 219, 0.05);
+}
+
+/* 按钮样式优化 */
+.button, input[type=submit], input[type=button], .submit-row input, a.button {
+  background: var(--secondary);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 15px;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.button:hover, input[type=submit]:hover, input[type=button]:hover, a.button:hover {
+  background: var(--link-hover-color);
+}
+
+.button.default, input[type=submit].default, .submit-row input.default {
+  background: var(--accent);
+}
+
+.button.default:hover, input[type=submit].default:hover, .submit-row input.default:hover {
+  background: var(--object-tools-hover-bg);
+}
+
+/* 表单样式美化 */
+.form-row {
+  border-bottom: 1px solid var(--hairline-color);
+  padding: 15px 10px;
+}
+
+.form-row:last-child {
+  border-bottom: none;
+}
+
+input[type=text], input[type=password], input[type=email], input[type=url], 
+input[type=number], input[type=tel], textarea, select, .vTextField {
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+input[type=text]:focus, input[type=password]:focus, input[type=email]:focus, 
+input[type=url]:focus, input[type=number]:focus, input[type=tel]:focus, 
+textarea:focus, select:focus, .vTextField:focus {
+  border-color: var(--secondary);
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.1);
+}
+
+/* 模块和侧边栏美化 */
+.module {
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  border: none;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.module h2, .module caption {
+  background: var(--primary);
+  color: var(--primary-fg);
+  font-weight: 500;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+}
+
+/* 响应式调整 */
+@media (max-width: 767px) {
+  #header {
+    padding: 15px;
+    text-align: center;
+  }
+  
+  #header #branding, #header #user-tools {
+    float: none;
+    display: block;
+    text-align: center;
+    margin: 8px 0;
+  }
+  
+  #user-tools a {
+    margin: 5px;
+    display: inline-block;
+  }
+} 

@@ -1,0 +1,651 @@
+{% extends "blog/base.html" %}
+{% load static %}
+
+{% block title %}Create Post - Selwyn's Blog{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.css" rel="stylesheet" type="text/css" />
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+<style>
+    /* 确保Select2下拉菜单总是向下打开 */
+    .select2-container--open .select2-dropdown {
+        top: 100% !important;
+        bottom: auto !important;
+    }
+    
+    /* 确保Tagify下拉菜单总是向下打开 */
+    .tagify__dropdown {
+        top: 100% !important;
+        bottom: auto !important;
+    }
+    
+    .create-post-section {
+        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 2.5rem;
+        position: relative;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    }
+    
+    .create-post-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.1);
+        opacity: 0.1;
+    }
+    
+    .form-card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+        margin-bottom: 2.5rem;
+        background-color: var(--bg-light);
+        border: 1px solid var(--card-border);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .form-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+    }
+    
+    .form-card .card-header {
+        background-color: rgba(0, 0, 0, 0.05);
+        border-bottom: 1px solid var(--card-border);
+        padding: 1.5rem;
+        color: var(--text-color);
+        font-weight: 600;
+    }
+    
+    .form-control {
+        border-radius: 10px;
+        padding: 0.75rem 1rem;
+        border-color: var(--card-border);
+        background-color: var(--bg-light);
+        color: var(--text-color);
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+        box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
+        border-color: #4e73df;
+        background-color: var(--bg-light);
+        transform: translateY(-2px);
+    }
+    
+    label {
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        color: var(--text-color);
+        display: flex;
+        align-items: center;
+    }
+    
+    label i {
+        margin-right: 0.75rem;
+        color: #4e73df;
+        font-size: 1.1rem;
+    }
+    
+    .note-editor {
+        border-color: var(--card-border) !important;
+        border-radius: 15px !important;
+        background-color: var(--card-bg);
+        overflow: hidden;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+    }
+    
+    .note-editor:focus-within {
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+        transform: translateY(-5px);
+    }
+    
+    .note-editor .note-toolbar {
+        background: linear-gradient(to right, #4e73df, #36b9cc);
+        border-bottom: 1px solid var(--card-border);
+        padding: 0.75rem !important;
+        border-top-left-radius: 15px;
+        border-top-right-radius: 15px;
+    }
+    
+    .note-editor .note-toolbar .note-btn {
+        background-color: rgba(255, 255, 255, 0.15);
+        border: none;
+        color: white;
+        border-radius: 8px;
+        margin: 2px;
+        transition: all 0.2s;
+    }
+    
+    .note-editor .note-toolbar .note-btn:hover {
+        background-color: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+    }
+    
+    .note-editor .note-toolbar .note-btn.active {
+        background-color: rgba(255, 255, 255, 0.3);
+    }
+    
+    .note-editor .note-editing-area {
+        background-color: var(--bg-light);
+        padding: 1.5rem 0;
+    }
+    
+    .note-editor .note-statusbar {
+        border-top: 1px solid var(--card-border) !important;
+        background-color: rgba(0, 0, 0, 0.02);
+    }
+    
+    /* 标签样式 */
+    .tagify {
+        --tag-bg: var(--primary-color);
+        --tag-hover: var(--primary-light);
+        --tag-text-color: #fff;
+        --tag-border-radius: 20px;
+        --tag-pad: 0.5em 1em;
+        --tag-inset-shadow-size: 1.3em;
+        --tags-border-color: var(--card-border);
+        --tags-focus-border-color: var(--primary-color);
+        --tags-hover-border-color: var(--primary-light);
+        
+        width: 100%;
+        max-width: 100%;
+        background: var(--bg-light);
+        border-radius: 10px;
+        padding: 0.5rem;
+        min-height: 45px;
+        transition: all 0.3s ease;
+    }
+    
+    .tagify:focus-within {
+        box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+        border-color: var(--primary-color);
+        transform: translateY(-2px);
+    }
+    
+    .tagify__tag {
+        margin: 5px 5px 5px 0;
+    }
+    
+    .tagify__tag > div {
+        box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+    }
+    
+    .tagify__tag__removeBtn {
+        color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .tagify__tag__removeBtn:hover {
+        color: white;
+    }
+    
+    .tagify__input {
+        margin: 5px;
+        padding: 0.3em 0;
+        color: var(--text-color);
+    }
+    
+    /* 预设标签按钮 */
+    .preset-tag-btn {
+        transition: all 0.3s;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        padding: 0.25rem 0.8rem;
+        margin: 0.2rem;
+        background-color: #f8f9fc;
+        color: #5a5c69;
+        border: 1px solid #e3e6f0;
+    }
+    
+    .preset-tag-btn:hover {
+        background-color: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .preset-tags {
+        margin-top: 1rem;
+    }
+    
+    .preset-tags-container {
+        display: flex;
+        flex-wrap: wrap;
+        margin-top: 0.5rem;
+    }
+    
+    /* Tagify 下拉菜单样式 */
+    .tagify__dropdown {
+        max-height: 200px;
+        overflow-y: auto;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        border-radius: 10px;
+        background: white;
+        z-index: 999;
+    }
+    
+    .tagify__dropdown__item {
+        padding: 0.5rem 1rem;
+        border-radius: 0;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .tagify__dropdown__item--active {
+        background: var(--primary-color);
+        color: white;
+    }
+    
+    /* 表单按钮 */
+    .btn-action-group {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+        margin-top: 2.5rem;
+    }
+    
+    .btn-save {
+        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        border: none;
+        padding: 0.75rem 1.75rem;
+        border-radius: 10px;
+        font-weight: 600;
+        color: white;
+        box-shadow: 0 4px 15px rgba(78, 115, 223, 0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .btn-save:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(78, 115, 223, 0.4);
+    }
+    
+    .btn-cancel {
+        background: transparent;
+        border: 1px solid #d1d3e2;
+        padding: 0.75rem 1.75rem;
+        border-radius: 10px;
+        font-weight: 600;
+        color: #5a5c69;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-cancel:hover {
+        color: #2e2f39;
+        border-color: #5a5c69;
+        transform: translateY(-3px);
+    }
+    
+    /* 表单分组样式 */
+    .form-section {
+        margin-bottom: 2.5rem;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid var(--card-border);
+    }
+    
+    .form-section:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+    
+    .form-section-title {
+        margin-bottom: 1.5rem;
+        font-weight: 700;
+        font-size: 1.2rem;
+        color: #4e73df;
+    }
+    
+    /* 动画效果 */
+    .form-field-fade {
+        animation: fieldFadeIn 0.6s ease-out;
+    }
+    
+    @keyframes fieldFadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Create Post Banner -->
+<section class="create-post-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center position-relative">
+                <h1 class="display-4 mb-3 fw-bold">Create New Post</h1>
+                <p class="lead mb-0">Share your knowledge and insights with the world</p>
+                <div class="mt-4">
+                    <i class="fas fa-pencil-alt fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="container mb-5">
+    <div class="row">
+        <div class="col-lg-9 mx-auto">
+            <div class="form-card">
+                <div class="card-header">
+                    <i class="fas fa-edit me-2"></i> Post Details
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="form-section">
+                            <h4 class="form-section-title">Basic Information</h4>
+                            
+                            <div class="mb-4 form-field-fade">
+                                <label for="{{ form.title.id_for_label }}">
+                                    <i class="fas fa-heading"></i> Title
+                                </label>
+                                {{ form.title }}
+                                {% if form.title.errors %}
+                                <div class="text-danger mt-2">
+                                    {{ form.title.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-4 form-field-fade" style="animation-delay: 0.1s">
+                                <label for="{{ form.category.id_for_label }}">
+                                    <i class="fas fa-folder"></i> Category
+                                </label>
+                                {{ form.category }}
+                                {% if form.category.errors %}
+                                <div class="text-danger mt-2">
+                                    {{ form.category.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-4 form-field-fade" style="animation-delay: 0.2s">
+                                <label for="tags-input">
+                                    <i class="fas fa-tags"></i> Tags
+                                </label>
+                                <input id="tags-input" type="text" class="form-control" name="tags" placeholder="Add tags to help readers find your post">
+                                <small class="form-text text-muted mt-2">Press Enter or comma to add tags</small>
+                                
+                                <!-- Popular tags -->
+                                <div class="preset-tags">
+                                    <small class="d-block mb-2 text-muted">Popular tags (click to add):</small>
+                                    <div class="preset-tags-container">
+                                        <!-- Filled by JavaScript -->
+                                    </div>
+                                </div>
+                                
+                                {% if form.tags.errors %}
+                                <div class="text-danger mt-2">
+                                    {{ form.tags.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <h4 class="form-section-title">Content</h4>
+                            
+                            <div class="mb-4 form-field-fade" style="animation-delay: 0.3s">
+                                <label for="{{ form.content.id_for_label }}">
+                                    <i class="fas fa-file-alt"></i> Article Content
+                                </label>
+                                {{ form.content }}
+                                <small class="form-text text-muted mt-2">Use the toolbar above to format your content, add images, links, and more</small>
+                                {% if form.content.errors %}
+                                <div class="text-danger mt-2">
+                                    {{ form.content.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- 编辑 slug 字段部分，隐藏它 -->
+                        <div class="mb-4" style="display:none;">
+                            <label for="{{ form.slug.id_for_label }}">
+                                <i class="fas fa-link"></i> URL别名
+                            </label>
+                            {{ form.slug }}
+                            <div class="form-text text-muted">{{ form.slug.help_text }}</div>
+                            {% if form.slug.errors %}
+                            <div class="text-danger mt-2">
+                                {{ form.slug.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="btn-action-group">
+                            <a href="{% url 'blog:index' %}" class="btn btn-cancel">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-save">
+                                <i class="fas fa-save me-2"></i>Publish Post
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        // 初始化Select2
+        $('#id_category').select2({
+            theme: 'classic',
+            width: '100%',
+            placeholder: 'Select a category',
+            allowClear: true,
+            templateResult: formatCategory,
+            templateSelection: formatCategory,
+            dropdownPosition: 'below',
+            dropdownParent: $('body')
+        });
+        
+        // 为分类选项添加图标
+        function formatCategory(category) {
+            if (!category.id) {
+                return category.text;
+            }
+            
+            // 根据不同的分类名添加不同的图标
+            let iconClass = 'fa-folder';
+            const categoryName = category.text.toLowerCase();
+            
+            if (categoryName.includes('tech') || categoryName.includes('programming')) {
+                iconClass = 'fa-code';
+            } else if (categoryName.includes('business')) {
+                iconClass = 'fa-briefcase';
+            } else if (categoryName.includes('travel')) {
+                iconClass = 'fa-plane';
+            } else if (categoryName.includes('food')) {
+                iconClass = 'fa-utensils';
+            } else if (categoryName.includes('health')) {
+                iconClass = 'fa-heartbeat';
+            } else if (categoryName.includes('art') || categoryName.includes('design')) {
+                iconClass = 'fa-palette';
+            } else if (categoryName.includes('education')) {
+                iconClass = 'fa-graduation-cap';
+            } else if (categoryName.includes('science')) {
+                iconClass = 'fa-flask';
+            } else if (categoryName.includes('lifestyle')) {
+                iconClass = 'fa-coffee';
+            }
+            
+            return $(`<span><i class="fas ${iconClass} me-2"></i> ${category.text}</span>`);
+        }
+        
+        // 初始化富文本编辑器
+        $('#id_content').summernote({
+            height: 400,
+            placeholder: 'Start writing your amazing content...',
+            focus: true,
+            toolbar: [
+                ['style', ['style']],
+                ['font', ['bold', 'underline', 'clear']],
+                ['color', ['color']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['table', ['table']],
+                ['insert', ['link', 'picture', 'video']],
+                ['view', ['fullscreen', 'codeview', 'help']]
+            ],
+            callbacks: {
+                onImageUpload: function(files) {
+                    for(let i=0; i < files.length; i++) {
+                        uploadImage(files[i]);
+                    }
+                }
+            }
+        });
+        
+        // 自定义编辑器的按钮样式和位置
+        setTimeout(function() {
+            // 给工具栏按钮添加图标
+            $('.note-btn[data-original-title="Bold"]').html('<i class="fas fa-bold"></i>');
+            $('.note-btn[data-original-title="Underline"]').html('<i class="fas fa-underline"></i>');
+            $('.note-btn[data-original-title="Remove Font Style"]').html('<i class="fas fa-eraser"></i>');
+            $('.note-btn[data-original-title="Font Style"]').html('<i class="fas fa-font"></i>');
+            $('.note-btn[data-original-title="Unordered list"]').html('<i class="fas fa-list-ul"></i>');
+            $('.note-btn[data-original-title="Ordered list"]').html('<i class="fas fa-list-ol"></i>');
+            $('.note-btn[data-original-title="Paragraph"]').html('<i class="fas fa-paragraph"></i>');
+            $('.note-btn[data-original-title="Table"]').html('<i class="fas fa-table"></i>');
+            $('.note-btn[data-original-title="Link"]').html('<i class="fas fa-link"></i>');
+            $('.note-btn[data-original-title="Picture"]').html('<i class="fas fa-image"></i>');
+            $('.note-btn[data-original-title="Video"]').html('<i class="fas fa-video"></i>');
+            $('.note-btn[data-original-title="Full Screen"]').html('<i class="fas fa-expand"></i>');
+            $('.note-btn[data-original-title="Code View"]').html('<i class="fas fa-code"></i>');
+            $('.note-btn[data-original-title="Help"]').html('<i class="fas fa-question-circle"></i>');
+        }, 100);
+        
+        // 图片上传处理
+        function uploadImage(file) {
+            var data = new FormData();
+            data.append('image', file);
+            data.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+            
+            $.ajax({
+                url: '{% url "blog:upload_image" %}',
+                type: 'POST',
+                data: data,
+                contentType: false,
+                processData: false,
+                success: function(data) {
+                    $('#id_content').summernote('insertImage', data.url);
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.error('Error uploading image:', textStatus, errorThrown);
+                    alert('Failed to upload image. Please try again later.');
+                }
+            });
+        }
+        
+        // 初始化Tagify
+        var tagsInput = document.querySelector('#tags-input');
+        var tagify = new Tagify(tagsInput, {
+            backspace: "edit",
+            maxTags: 10,
+            placeholder: "Type tags and press Enter",
+            dropdown: {
+                enabled: 1,
+                maxItems: 10,         // 显示更多建议
+                position: "bottom",      // 强制显示在输入框下方
+                closeOnSelect: false, // 选择后不关闭
+                highlightFirst: true, // 默认高亮第一项
+                searchKeys: ["value"], // 搜索键
+                classname: "tags-dropdown",
+                fuzzySearch: true,    // 开启模糊搜索
+                autoFocus: true,      // 自动获取焦点
+            },
+            enforceWhitelist: false,
+            transformTag: function(tagData) {
+                // 转换标签数据，移除任何非法字符
+                tagData.value = tagData.value
+                    .trim()                   // 移除前后空格
+                    .replace(/\s+/g, ' ')     // 多个空格替换为单个空格
+                    .replace(/[^\w\s-]/g, '') // 只保留字母、数字、空格和连字符
+                    .toLowerCase();           // 转换为小写
+            },
+            validate: function(tagData) {
+                // 验证标签：必须至少有1个字符且不超过20个字符
+                if (!tagData.value.trim() || tagData.value.trim().length < 1) {
+                    return 'Tag cannot be empty';
+                }
+                if (tagData.value.length > 20) {
+                    return 'Tag length cannot exceed 20 characters';
+                }
+                return true;
+            }
+        });
+        
+        // 常用标签推荐
+        const commonTags = [
+            'technology', 'programming', 'web', 'design', 'development',
+            'food', 'travel', 'health', 'lifestyle', 'fitness',
+            'business', 'marketing', 'finance', 'science', 'education'
+        ];
+        
+        // 设置白名单
+        tagify.settings.whitelist = commonTags;
+        
+        // 生成预设标签按钮
+        const presetTagsContainer = document.querySelector('.preset-tags-container');
+        if (presetTagsContainer) {
+            commonTags.slice(0, 10).forEach(tag => {
+                const tagBtn = document.createElement('button');
+                tagBtn.type = 'button';
+                tagBtn.className = 'preset-tag-btn';
+                tagBtn.innerHTML = `<i class="fas fa-tag me-1"></i>${tag}`;
+                tagBtn.addEventListener('click', function() {
+                    const existingValues = tagify.value ? tagify.value.map(item => item.value) : [];
+                    if (!existingValues.includes(tag)) {
+                        tagify.addTags([tag]);
+                    }
+                });
+                presetTagsContainer.appendChild(tagBtn);
+            });
+        }
+        
+        // 默认情况下点击标签输入框就显示下拉菜单
+        tagsInput.addEventListener('focus', function() {
+            tagify.dropdown.show.call(tagify); // 显示建议下拉菜单
+        });
+        
+        // 监听标签添加事件
+        tagify.on('add', function(e) {
+            console.log('Tag added:', e.detail.data);
+        });
+        
+        // 监听标签移除事件
+        tagify.on('remove', function(e) {
+            console.log('Tag removed:', e.detail.data);
+        });
+    });
+</script>
+{% endblock %} 

@@ -1,0 +1,279 @@
+{% extends "blog/base.html" %}
+{% load static %}
+
+{% block title %}Categories - Selwyn's Blog{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Categories page styles */
+    .categories-banner {
+        background: linear-gradient(135deg, rgba(115, 113, 252, 0.1) 0%, rgba(56, 182, 255, 0.1) 100%);
+        border-radius: 24px;
+        padding: 3rem 2rem;
+        margin-bottom: 3rem;
+        position: relative;
+        overflow: hidden;
+        text-align: center;
+        border: 1px solid var(--card-border);
+    }
+    
+    .categories-banner::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3z' fill='%237371fc' fill-opacity='0.2'/%3E%3C/svg%3E");
+        opacity: 0.5;
+        z-index: -1;
+    }
+    
+    .categories-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        background: var(--gradient-1);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        display: inline-block;
+    }
+    
+    .categories-subtitle {
+        font-size: 1.1rem;
+        color: var(--text-muted);
+        max-width: 700px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .category-card {
+        background-color: var(--card-bg);
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid var(--card-border);
+        transition: all 0.3s ease;
+        height: 100%;
+        margin-bottom: 1.5rem;
+    }
+    
+    .category-card:hover {
+        transform: translateY(-10px);
+        box-shadow: var(--shadow-md);
+        border-color: var(--primary-color);
+    }
+    
+    .category-card-header {
+        padding: 1.5rem;
+        background: var(--gradient-3);
+        border-bottom: 1px solid var(--card-border);
+        display: flex;
+        align-items: center;
+    }
+    
+    .category-icon {
+        width: 60px;
+        height: 60px;
+        background-color: var(--primary-color);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        margin-right: 1rem;
+    }
+    
+    .category-info {
+        flex-grow: 1;
+    }
+    
+    .category-name {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+        color: var(--text-color);
+    }
+    
+    .category-count {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+    }
+    
+    .category-card-body {
+        padding: 1.5rem;
+    }
+    
+    .category-description {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+    }
+    
+    .category-posts {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+    
+    .category-post-item {
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--card-border);
+        display: flex;
+        align-items: center;
+    }
+    
+    .category-post-item:last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+    }
+    
+    .category-post-icon {
+        width: 24px;
+        height: 24px;
+        background-color: rgba(115, 113, 252, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary-color);
+        margin-right: 0.75rem;
+        font-size: 0.75rem;
+    }
+    
+    .category-post-link {
+        color: var(--text-color);
+        flex-grow: 1;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+    
+    .category-post-link:hover {
+        color: var(--primary-color);
+        transform: translateX(5px);
+    }
+    
+    .category-card-footer {
+        padding: 1rem 1.5rem;
+        background-color: rgba(115, 113, 252, 0.05);
+        border-top: 1px solid var(--card-border);
+        text-align: right;
+    }
+    
+    .view-all {
+        color: var(--primary-color);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        transition: all 0.3s ease;
+    }
+    
+    .view-all i {
+        margin-left: 0.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .view-all:hover {
+        color: var(--primary-light);
+    }
+    
+    .view-all:hover i {
+        transform: translateX(3px);
+    }
+    
+    @media (max-width: 768px) {
+        .categories-title {
+            font-size: 2rem;
+        }
+        
+        .categories-banner {
+            padding: 2.5rem 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .category-icon {
+            width: 50px;
+            height: 50px;
+            font-size: 1.25rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Categories Banner -->
+<section class="categories-banner">
+    <div class="container">
+        <h1 class="categories-title">Categories</h1>
+        <p class="categories-subtitle">Browse content across different categories and find topics that interest you</p>
+    </div>
+</section>
+
+<!-- Categories List -->
+<div class="container">
+    <div class="row">
+        {% if categories %}
+            {% for category in categories %}
+            <div class="col-md-6 col-lg-4">
+                <div class="category-card">
+                    <div class="category-card-header">
+                        <div class="category-icon">
+                            <i class="fas fa-folder"></i>
+                        </div>
+                        <div class="category-info">
+                            <h2 class="category-name">{{ category.name }}</h2>
+                            <div class="category-count">{{ category.post_count }} articles</div>
+                        </div>
+                    </div>
+                    <div class="category-card-body">
+                        <div class="category-description">
+                            {% if category.description %}
+                            {{ category.description }}
+                            {% else %}
+                            This category contains various articles about {{ category.name }}. Click to view more.
+                            {% endif %}
+                        </div>
+                        
+                        <ul class="category-posts">
+                            {% for post in category.posts.all|slice:":3" %}
+                            <li class="category-post-item">
+                                <div class="category-post-icon">
+                                    <i class="fas fa-file-alt"></i>
+                                </div>
+                                <a href="{% url 'blog:post_detail' post.slug %}" class="category-post-link">{{ post.title }}</a>
+                            </li>
+                            {% empty %}
+                            <li class="category-post-item">
+                                <div class="category-post-icon">
+                                    <i class="fas fa-info-circle"></i>
+                                </div>
+                                <span class="text-muted">No articles yet</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% if category.post_count > 0 %}
+                    <div class="category-card-footer">
+                        <a href="{% url 'blog:category_posts' category.slug %}" class="view-all">
+                            View all <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-info text-center">
+                    <i class="fas fa-info-circle me-2"></i>
+                    No categories available. Please create categories before publishing articles.
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

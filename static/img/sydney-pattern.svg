@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600" viewBox="0 0 1200 600">
+  <!-- 悉尼歌剧院风格的线条 -->
+  <path d="M0,250 C150,350 300,200 450,300 S600,400 750,300 S900,150 1050,250 S1200,400 1350,350" 
+        fill="none" stroke="#00BAE9" stroke-width="3" opacity="0.2" />
+  <path d="M0,200 C150,300 300,150 450,250 S600,350 750,250 S900,100 1050,200 S1200,350 1350,300" 
+        fill="none" stroke="#005A87" stroke-width="3" opacity="0.2" />
+  <path d="M0,300 C150,400 300,250 450,350 S600,450 750,350 S900,200 1050,300 S1200,450 1350,400" 
+        fill="none" stroke="#FF731D" stroke-width="3" opacity="0.2" />
+  
+  <!-- 悉尼港湾波浪 -->
+  <path d="M0,400 C100,380 200,420 300,400 S400,350 500,370 S600,410 700,390 S800,340 900,360 S1000,420 1100,400 S1200,360 1300,380" 
+        fill="none" stroke="#00BAE9" stroke-width="5" opacity="0.3" />
+  
+  <!-- 点缀点状元素 -->
+  <g fill="#005A87" opacity="0.2">
+    <circle cx="100" cy="150" r="3" />
+    <circle cx="200" cy="180" r="2" />
+    <circle cx="300" cy="120" r="4" />
+    <circle cx="400" cy="200" r="3" />
+    <circle cx="500" cy="150" r="2" />
+    <circle cx="600" cy="220" r="3" />
+    <circle cx="700" cy="170" r="4" />
+    <circle cx="800" cy="130" r="2" />
+    <circle cx="900" cy="190" r="3" />
+    <circle cx="1000" cy="150" r="2" />
+    <circle cx="1100" cy="210" r="4" />
+  </g>
+  
+  <g fill="#FF731D" opacity="0.2">
+    <circle cx="150" cy="250" r="2" />
+    <circle cx="250" cy="280" r="3" />
+    <circle cx="350" cy="220" r="2" />
+    <circle cx="450" cy="300" r="4" />
+    <circle cx="550" cy="250" r="2" />
+    <circle cx="650" cy="320" r="3" />
+    <circle cx="750" cy="270" r="2" />
+    <circle cx="850" cy="230" r="4" />
+    <circle cx="950" cy="290" r="2" />
+    <circle cx="1050" cy="250" r="3" />
+    <circle cx="1150" cy="310" r="2" />
+  </g>
+</svg> 
