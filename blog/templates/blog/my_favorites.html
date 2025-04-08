@@ -1,42 +1,410 @@
 {% extends 'blog/base.html' %}
 
-{% block title %}My Favorites - My Blog{% endblock %}
+{% block title %}My Favorites - Selwyn's Blog{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Page header styling */
+    .favorites-header {
+        background: linear-gradient(135deg, rgba(115, 113, 252, 0.08) 0%, rgba(115, 113, 252, 0.03) 100%);
+        border-radius: 16px;
+        padding: 2.5rem;
+        margin-bottom: 3rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .favorites-header::before {
+        content: "";
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(115, 113, 252, 0.15) 0%, rgba(115, 113, 252, 0) 70%);
+        border-radius: 50%;
+        top: -150px;
+        right: -100px;
+        z-index: 0;
+    }
+    
+    .favorites-header::after {
+        content: "";
+        position: absolute;
+        width: 200px;
+        height: 200px;
+        background: radial-gradient(circle, rgba(115, 113, 252, 0.1) 0%, rgba(115, 113, 252, 0) 70%);
+        border-radius: 50%;
+        bottom: -100px;
+        left: 10%;
+        z-index: 0;
+    }
+    
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        position: relative;
+        z-index: 1;
+        background: linear-gradient(135deg, #7371fc 0%, #9e9dff 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .page-subtitle {
+        color: #6c757d;
+        font-size: 1.1rem;
+        position: relative;
+        z-index: 1;
+    }
+    
+    /* Card styling */
+    .favorites-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 1.75rem;
+    }
+    
+    .favorite-card {
+        background-color: #fff;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        border: 1px solid rgba(115, 113, 252, 0.05);
+        height: 100%;
+    }
+    
+    .favorite-card:hover {
+        transform: translateY(-15px);
+        box-shadow: 0 15px 35px rgba(115, 113, 252, 0.2);
+        border-color: rgba(115, 113, 252, 0.3);
+    }
+    
+    .favorite-card-body {
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+    
+    .card-category {
+        display: inline-block;
+        background: linear-gradient(135deg, #7371fc 0%, #9e9dff 100%);
+        color: white;
+        font-size: 0.75rem;
+        padding: 0.35rem 1rem;
+        border-radius: 30px;
+        margin-bottom: 1rem;
+        font-weight: 500;
+        box-shadow: 0 4px 10px rgba(115, 113, 252, 0.2);
+    }
+    
+    .card-title {
+        font-size: 1.35rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        line-height: 1.4;
+        transition: all 0.3s ease;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .card-title a {
+        color: #2d2d2d;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+    
+    .favorite-card:hover .card-title a {
+        color: #7371fc;
+        text-decoration: none;
+    }
+    
+    .card-excerpt {
+        color: #6c757d;
+        font-size: 0.95rem;
+        margin-bottom: 1.5rem;
+        line-height: 1.7;
+        flex-grow: 1;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .card-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 1.25rem;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        margin-top: auto;
+    }
+    
+    .meta-left {
+        display: flex;
+        align-items: center;
+    }
+    
+    .author-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #7371fc 0%, #9e9dff 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        box-shadow: 0 4px 10px rgba(115, 113, 252, 0.2);
+        margin-right: 0.75rem;
+    }
+    
+    .author-name {
+        font-weight: 600;
+        color: #444;
+        font-size: 0.9rem;
+    }
+    
+    .meta-right {
+        font-size: 0.85rem;
+        color: #aaa;
+        display: flex;
+        align-items: center;
+    }
+    
+    .post-date i {
+        margin-right: 0.35rem;
+        color: #7371fc;
+    }
+    
+    .card-actions {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 1.5rem;
+    }
+    
+    .btn-read {
+        flex: 1;
+        padding: 0.75rem 1.5rem;
+        border-radius: 30px;
+        background: linear-gradient(135deg, #7371fc 0%, #9e9dff 100%);
+        color: white;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+        box-shadow: 0 4px 15px rgba(115, 113, 252, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .btn-read:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(115, 113, 252, 0.3);
+        color: white;
+    }
+    
+    .btn-read i {
+        margin-right: 0.5rem;
+    }
+    
+    .btn-remove {
+        padding: 0.75rem 1.5rem;
+        border-radius: 30px;
+        background: transparent;
+        color: #e74c3c;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(231, 76, 60, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .btn-remove:hover {
+        background-color: #e74c3c;
+        color: white;
+        border-color: #e74c3c;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 15px rgba(231, 76, 60, 0.2);
+    }
+    
+    .btn-remove i {
+        margin-right: 0.5rem;
+    }
+    
+    /* Empty state styling */
+    .empty-state {
+        text-align: center;
+        padding: 5rem 0;
+        max-width: 600px;
+        margin: 0 auto;
+        position: relative;
+    }
+    
+    .empty-background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle, rgba(115, 113, 252, 0.05) 0%, rgba(255, 255, 255, 0) 70%);
+        z-index: -1;
+        border-radius: 50%;
+    }
+    
+    .empty-icon {
+        width: 120px;
+        height: 120px;
+        background: linear-gradient(135deg, rgba(115, 113, 252, 0.1) 0%, rgba(115, 113, 252, 0.05) 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 2rem;
+    }
+    
+    .empty-icon i {
+        font-size: 3rem;
+        background: linear-gradient(135deg, #7371fc 0%, #9e9dff 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .empty-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: #2d2d2d;
+    }
+    
+    .empty-text {
+        color: #6c757d;
+        font-size: 1.1rem;
+        line-height: 1.7;
+        margin-bottom: 2rem;
+    }
+    
+    .btn-explore {
+        padding: 1rem 2rem;
+        border-radius: 30px;
+        background: linear-gradient(135deg, #7371fc 0%, #9e9dff 100%);
+        color: white;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+        box-shadow: 0 4px 15px rgba(115, 113, 252, 0.2);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .btn-explore:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(115, 113, 252, 0.3);
+        color: white;
+    }
+    
+    .btn-explore i {
+        margin-right: 0.75rem;
+        font-size: 1.1rem;
+    }
+    
+    /* Animation */
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0px); }
+    }
+    
+    .empty-icon {
+        animation: float 3s ease-in-out infinite;
+    }
+    
+    @media (max-width: 768px) {
+        .page-title {
+            font-size: 2rem;
+        }
+        
+        .favorites-header {
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <h1 class="mb-4">My Favorites</h1>
-        
-        {% if favorites %}
-            <div class="card">
-                <div class="card-body">
-                    <div class="list-group">
-                        {% for favorite in favorites %}
-                            <div class="list-group-item">
-                                <div class="d-flex w-100 justify-content-between">
-                                    <h5 class="mb-1">
-                                        <a href="{% url 'blog:post_detail' favorite.post.slug %}">{{ favorite.post.title }}</a>
-                                    </h5>
-                                    <small>Saved on {{ favorite.created_at|date:"Y-m-d H:i" }}</small>
+<div class="container">
+    <!-- Header Section -->
+    <div class="favorites-header">
+        <h1 class="page-title">My Favorites</h1>
+        <p class="page-subtitle">Articles you've saved for inspiration and future reference</p>
+    </div>
+
+    {% if favorite_posts %}
+        <!-- Favorites Grid -->
+        <div class="favorites-grid">
+            {% for post in favorite_posts %}
+                <article class="favorite-card">
+                    <div class="favorite-card-body">
+                        {% if post.category %}
+                            <div class="card-category">{{ post.category.name }}</div>
+                        {% endif %}
+                        
+                        <h2 class="card-title">
+                            <a href="{% url 'blog:post_detail' post.slug %}">{{ post.title }}</a>
+                        </h2>
+                        
+                        <div class="card-excerpt">
+                            {{ post.content|striptags|truncatewords:25 }}
+                        </div>
+                        
+                        <div class="card-meta">
+                            <div class="meta-left">
+                                <div class="author-avatar">
+                                    {{ post.author.username.0|upper }}
                                 </div>
-                                <p class="mb-1">{{ favorite.post.content|truncatechars:100 }}</p>
-                                <div class="d-flex justify-content-between">
-                                    <small>Author: {{ favorite.post.author.username }}</small>
-                                    <a href="{% url 'blog:favorite_post' favorite.post.id %}" class="btn btn-sm btn-outline-danger">
-                                        取消收藏
-                                    </a>
+                                <div class="author-name">{{ post.author.username }}</div>
+                            </div>
+                            <div class="meta-right">
+                                <div class="post-date">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    {{ post.created_at|date:"M d, Y" }}
                                 </div>
                             </div>
-                        {% endfor %}
+                        </div>
+                        
+                        <div class="card-actions">
+                            <a href="{% url 'blog:post_detail' post.slug %}" class="btn btn-read">
+                                <i class="fas fa-book-reader"></i> Read Article
+                            </a>
+                            <a href="{% url 'blog:favorite_post' post.slug %}" class="btn btn-remove">
+                                <i class="fas fa-heart-broken"></i> Remove
+                            </a>
+                        </div>
                     </div>
-                </div>
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- Empty State -->
+        <div class="empty-state">
+            <div class="empty-background"></div>
+            <div class="empty-icon">
+                <i class="fas fa-bookmark"></i>
             </div>
-        {% else %}
-            <div class="alert alert-info">
-                <p>You haven't saved any articles yet.</p>
-                <a href="{% url 'blog:index' %}" class="btn btn-primary">Browse Articles</a>
-            </div>
-        {% endif %}
-    </div>
+            <h2 class="empty-title">Your favorites collection is empty</h2>
+            <p class="empty-text">Start building your personal collection by favoriting articles that inspire you. Click the heart icon on any article to add it to your favorites.</p>
+            <a href="{% url 'blog:index' %}" class="btn btn-explore">
+                <i class="fas fa-compass"></i> Explore Articles
+            </a>
+        </div>
+    {% endif %}
 </div>
 {% endblock %} 
