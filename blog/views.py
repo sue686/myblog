@@ -15,6 +15,7 @@ from django.db.models import Count
 from django.utils.text import slugify
 import uuid
 from django.contrib.auth import get_user_model
+from django.db.models import F
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -396,7 +397,128 @@ def index(request):
 
 def about_me(request):
     """About me page"""
-    return render(request, 'blog/about.html')
+    # 创建简历数据
+    resume = {
+        'name': 'Selwyn Liu',
+        'email': 'sunnyl23@gmail.com',
+        'phone': '0432593618',
+        'summary': """
+            <p>Experienced IT Support Officer with a strong background in technical troubleshooting, network security, and system administration. Adept at resolving 50+ IT support tickets per month, ensuring 99% system uptime, and optimizing IT workflows to enhance user experience. Proficient in Active Directory, ITIL Framework, Jira, ServiceNow, and IT asset management. Strong problem-solving, communication, and time management skills, dedicated to providing high-quality IT support and reducing downtime.</p>
+        """,
+        'experience': [
+            {
+                'position': 'IT Support Officer',
+                'company': 'Wellington Education Group',
+                'location': 'Sydney, Australia',
+                'period': '07/2024 - Present',
+                'responsibilities': [
+                    'Provided IT Help Desk support for 100+ students and staff, reducing downtime by 20%',
+                    'Managed network security and IT infrastructure, ensuring 99% system availability',
+                    'Handled 50+ technical support tickets per month, troubleshooting hardware, software, and connectivity issues',
+                    'Administered Active Directory, managing user accounts, group policies, and access controls',
+                    'Oversaw Google Workspace & Office 365 administration, optimizing email and cloud service performance',
+                    'Conducted IT training and onboarding for new employees, reducing onboarding time by 25%',
+                    'Maintained IT asset records and inventory, ensuring efficient resource allocation'
+                ]
+            },
+            {
+                'position': 'Front-end Developer',
+                'company': 'Urban Construction Bureau',
+                'location': 'Henan, China',
+                'period': '11/2022 - 02/2023',
+                'responsibilities': [
+                    'Conducted a thorough analysis of existing web page structures and technical architecture to identify improvement opportunities',
+                    'Optimized web content and headlines, increasing search engine visibility by 20%',
+                    'Developed responsive web pages using Vue.js, enhancing user experience across multiple devices',
+                    'Collaborated with back-end developers, reducing bug reports by 30%. Enhanced code quality and performed data analysis using jQuery',
+                    'Managed the content updates and optimization of the Urban Construction Bureau\'s website to ensure accurate information dissemination'
+                ]
+            },
+            {
+                'position': 'Site Engineer',
+                'company': 'Outsourcing engineering company',
+                'location': 'Henan, China',
+                'period': '10/2023 - 01/2024',
+                'responsibilities': [
+                    'Analyzed current processes, labor mobility, and material costs to propose efficiency improvements and cost reductions',
+                    'Communicated with environmental design engineers to gather feedback and suggestions',
+                    'Engaged with site staff to ensure understanding and implementation of best practices'
+                ]
+            }
+        ],
+        'skills': [
+            {
+                'category': 'Languages',
+                'items': ['English', 'Mandarin']
+            },
+            {
+                'category': 'IT Systems Maintenance & Troubleshooting',
+                'items': ['Help Desk support', 'Hardware/software troubleshooting', 'System maintenance']
+            },
+            {
+                'category': 'Network Security & Firewall Management',
+                'items': ['TCP/IP', 'DNS', 'DHCP', 'VPN configuration', 'Network firewall security measures']
+            },
+            {
+                'category': 'Email & Web Hosting Administration',
+                'items': ['Google Workspace', 'Office 365', 'Email hosting services']
+            },
+            {
+                'category': 'Active Directory & User Management',
+                'items': ['Directory setup', 'User account creation', 'Group permission control']
+            },
+            {
+                'category': 'Cybersecurity & Data Protection',
+                'items': ['Antivirus software', 'Security patching', 'Data backup & recovery solutions']
+            },
+            {
+                'category': 'Database',
+                'items': ['MySQL', 'phpMyAdmin', 'Database design for web applications']
+            },
+            {
+                'category': 'Hardware & Software',
+                'items': ['Windows', 'MacOS', 'Linux', 'System Imaging & Deployment']
+            }
+        ],
+        'education': [
+            {
+                'degree': 'Master of Information of Technology, Major in Software Engineering',
+                'institution': 'University of Sydney',
+                'location': 'Sydney, Australia',
+                'period': '02/2022 - 07/2023',
+                'projects': [
+                    {
+                        'title': 'Thesis Project',
+                        'description': 'Developed a Pesticide Guide App to assist farmers in identifying pesticide information and implementing crop protection measures. The project utilized Vue.js for front-end development and Java to create RESTful API. Deployment was carried out using AWS EC2 services.'
+                    },
+                    {
+                        'title': 'Main Project',
+                        'description': 'Created a modern web application using Vue.js for the front-end, Spring framework for Java back-end development, and MySQL for database management.'
+                    }
+                ],
+                'courses': ['Model-Driven Software Engineering', 'Object-Oriented Application Frameworks', 'Visual Analytics', 'Project Management in IT']
+            },
+            {
+                'degree': 'Bachelor of Information of Technology, Major in Software Engineering',
+                'institution': 'University of RMIT',
+                'location': 'Melbourne, Australia',
+                'period': '02/2019 - 12/2021',
+                'projects': [
+                    {
+                        'title': 'Thesis project',
+                        'description': 'Designed and implemented a delivery system using HTML, CSS, PHP, and phpMyAdmin for backend database management. The system aimed to offer users a streamlined ordering service and provide merchants with an efficient order management platform.'
+                    },
+                    {
+                        'title': 'Main Project in university',
+                        'description': 'Developed a hotel web design using Miro for UI design and Vue.js for front-end, while the back-end was implemented using Java Hibernate.'
+                    }
+                ],
+                'courses': ['Cloud Computing', 'Professional Computing Practice', 'Programming Project', 'Database Management Systems']
+            }
+        ]
+    }
+    
+    return render(request, 'blog/about.html', {'resume': resume, 'title': 'About Me'})
 
 @login_required
 def create_post(request):
@@ -450,15 +572,45 @@ class UserPostListView:
             username = kwargs.get('username')
             user = get_object_or_404(User, username=username)
             
+            # 获取选项卡参数
+            tab = request.GET.get('tab', 'newest')
+            
             # Get all published posts by user
-            posts = Post.objects.filter(
+            posts_query = Post.objects.filter(
                 author=user,
                 is_published=True
-            ).select_related('author', 'category').order_by('-created_at')
+            ).select_related('author', 'category')
+            
+            # 根据选项卡排序
+            if tab == 'popular':
+                posts = posts_query.annotate(
+                    popularity=Count('likes') + Count('comments') + F('views')
+                ).order_by('-popularity')
+            elif tab == 'oldest':
+                posts = posts_query.order_by('created_at')
+            else:  # newest (default)
+                posts = posts_query.order_by('-created_at')
+            
+            # 计算统计数据
+            posts_count = posts_query.count()
+            
+            # 计算总点赞数
+            total_likes = 0
+            for post in posts_query:
+                total_likes += post.likes.count()
+            
+            # 计算评论总数
+            total_comments = 0
+            for post in posts_query:
+                total_comments += post.comments.count()
             
             context = {
-                'user_profile': user,
+                'view_user': user,  # 使用view_user而不是user_profile
                 'posts': posts,
+                'posts_count': posts_count,
+                'total_likes': total_likes,
+                'total_comments': total_comments,
+                'tab': tab,
                 'page_title': f'{username}\'s posts'
             }
             

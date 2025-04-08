@@ -322,65 +322,69 @@
     }
     
     .skills-section {
-        padding: 2.5rem;
-    }
-    
-    .skills-group {
-        margin-bottom: 2.5rem;
-    }
-    
-    .skills-group:last-child {
-        margin-bottom: 0;
+        padding: 2rem;
     }
     
     .skills-title {
         display: flex;
         align-items: center;
-        gap: 0.75rem;
-        margin-bottom: 1.5rem;
-        font-weight: 700;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+        font-weight: 600;
         color: #2c3e50;
-        font-size: 1.2rem;
+        font-size: 1.1rem;
     }
     
     .skills-title i {
-        color: var(--section-color);
+        color: #1cc88a;
+        font-size: 1rem;
+    }
+    
+    .skill-category {
+        margin-bottom: 1.5rem;
     }
     
     .skill-badges {
         display: flex;
         flex-wrap: wrap;
-        gap: 0.75rem;
+        gap: 0.4rem;
     }
     
     .skill-badge {
         background-color: #f8f9fc;
-        color: #2c3e50;
+        color: #566573;
         border: 1px solid #e3e6f0;
         border-radius: 50px;
-        padding: 0.7rem 1.3rem;
-        font-size: 0.95rem;
-        font-weight: 600;
+        padding: 0.4rem 0.8rem;
+        font-size: 0.85rem;
+        font-weight: 500;
         display: inline-flex;
         align-items: center;
-        gap: 0.6rem;
-        transition: all 0.3s ease;
+        gap: 0.4rem;
+        transition: all 0.2s ease;
     }
     
     .skill-badge i {
-        color: var(--section-color);
-        font-size: 1rem;
+        color: #1cc88a;
+        font-size: 0.75rem;
     }
     
     .skill-badge:hover {
-        background-color: var(--section-color);
+        background-color: #1cc88a;
         color: white;
-        transform: translateY(-5px);
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        border-color: #1cc88a;
     }
     
     .skill-badge:hover i {
         color: white;
+    }
+    
+    .skills-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
     }
     
     .education-section {
@@ -758,27 +762,21 @@
             <h3>Professional Skills</h3>
         </div>
         <div class="skills-section">
-            <div class="skills-group">
-                <h5 class="skills-title">
-                    <i class="fas fa-language"></i> Languages
-                </h5>
-                <div class="skill-badges">
-                    {% for lang in resume.skills.languages %}
-                    <span class="skill-badge">
-                        <i class="fas fa-check-circle"></i> {{ lang }}
-                    </span>
-                    {% endfor %}
+            <div class="skills-grid">
+                {% for skill_group in resume.skills %}
+                <div class="skill-category">
+                    <h5 class="skills-title">
+                        <i class="fas fa-check-circle"></i> {{ skill_group.category }}
+                    </h5>
+                    <div class="skill-badges">
+                        {% for item in skill_group.items %}
+                        <span class="skill-badge">
+                            <i class="fas fa-circle"></i> {{ item }}
+                        </span>
+                        {% endfor %}
+                    </div>
                 </div>
-            </div>
-            <div class="skills-group">
-                <h5 class="skills-title">
-                    <i class="fas fa-tools"></i> Technical Skills
-                </h5>
-                <ul class="responsibility-list">
-                    {% for skill in resume.skills.technical %}
-                    <li>{{ skill }}</li>
-                    {% endfor %}
-                </ul>
+                {% endfor %}
             </div>
         </div>
     </div>
@@ -798,7 +796,7 @@
                             <i class="fas fa-user-graduate"></i> {{ edu.degree }}
                         </h4>
                         <h5 class="company-info">
-                            <i class="fas fa-university"></i> {{ edu.university }} 
+                            <i class="fas fa-university"></i> {{ edu.institution }} 
                             <i class="fas fa-map-marker-alt"></i> {{ edu.location }}
                         </h5>
                     </div>
@@ -815,7 +813,7 @@
                     {% for project in edu.projects %}
                     <div class="project-card">
                         <h6 class="project-title">
-                            <i class="fas fa-code-branch"></i> {{ project.name }}
+                            <i class="fas fa-code-branch"></i> {{ project.title }}
                         </h6>
                         <p class="project-description">{{ project.description }}</p>
                     </div>
