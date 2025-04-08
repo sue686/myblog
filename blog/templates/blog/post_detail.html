@@ -242,18 +242,49 @@
     
     .comment-submit {
         margin-top: 1rem;
-        padding: 0.5rem 1.5rem;
-        background: var(--gradient-1);
+        padding: 0.6rem 1.8rem;
+        background: linear-gradient(135deg, #3a8ffe 0%, #2d6cdf 100%);
         border: none;
         color: white;
         font-weight: 500;
-        border-radius: 10px;
+        border-radius: 4px;
         transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+        letter-spacing: 0.5px;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     
     .comment-submit:hover {
-        transform: translateY(-3px);
-        box-shadow: var(--shadow-sm);
+        background: linear-gradient(135deg, #2d6cdf 0%, #1a56c5 100%);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        transform: translateY(-1px);
+    }
+    
+    .comment-submit:active {
+        transform: translateY(1px);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+    
+    .btn-primary.submit-btn {
+        background: linear-gradient(135deg, #3a8ffe 0%, #2d6cdf 100%);
+        border: none;
+        color: white;
+        padding: 0.6rem 1.8rem;
+        border-radius: 4px;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary.submit-btn:hover {
+        background: linear-gradient(135deg, #2d6cdf 0%, #1a56c5 100%);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        transform: translateY(-1px);
     }
     
     .comments-list {
@@ -476,6 +507,52 @@
         margin-right: 0.3rem;
         color: var(--primary-color);
     }
+    
+    .btn-loading {
+        position: relative;
+        pointer-events: none;
+        color: transparent !important;
+    }
+    
+    .btn-loading:after {
+        content: '';
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        top: calc(50% - 8px);
+        left: calc(50% - 8px);
+        border: 2px solid #ffffff;
+        border-radius: 50%;
+        border-right-color: transparent;
+        animation: button-loading-spinner 0.75s linear infinite;
+    }
+    
+    @keyframes button-loading-spinner {
+        from {
+            transform: rotate(0turn);
+        }
+        to {
+            transform: rotate(1turn);
+        }
+    }
+    
+    .alert {
+        padding: 10px 15px;
+        border-radius: 4px;
+        margin-top: 10px;
+    }
+    
+    .alert-success {
+        background-color: rgba(40, 167, 69, 0.15);
+        border: 1px solid rgba(40, 167, 69, 0.2);
+        color: #28a745;
+    }
+    
+    .alert-danger {
+        background-color: rgba(220, 53, 69, 0.15);
+        border: 1px solid rgba(220, 53, 69, 0.2);
+        color: #dc3545;
+    }
 </style>
 {% endblock %}
 
@@ -568,17 +645,17 @@
         {% if user.is_authenticated %}
         <div class="comment-form-container">
             {% if 'id' in request.path %}
-                <form method="post" action="{% url 'blog:add_comment_id' post.id %}">
+                <form method="post" action="{% url 'blog:add_comment_id' post.id %}" id="commentForm">
             {% else %}
-                <form method="post" action="{% url 'blog:add_comment' post.slug %}">
+                <form method="post" action="{% url 'blog:add_comment' post.slug %}" id="commentForm">
             {% endif %}
                 {% csrf_token %}
                 <div class="form-group">
-                    <textarea name="content" class="form-control comment-textarea" placeholder="写下您的想法..."></textarea>
+                    <textarea name="content" class="form-control comment-textarea" placeholder="Write your thoughts..."></textarea>
                 </div>
                 <div class="d-flex justify-content-end">
-                    <button type="submit" class="btn comment-submit">
-                        <i class="fas fa-paper-plane me-2"></i>提交评论
+                    <button type="submit" class="btn-primary submit-btn">
+                        <i class="fas fa-paper-plane me-2"></i>Submit Comment
                     </button>
                 </div>
             </form>
@@ -615,14 +692,14 @@
                     
                     <!-- Reply form (initially hidden) -->
                     <div class="reply-form-container" id="reply-form-{{ comment.id }}" style="display: none;">
-                        <form method="post" action="{% url 'blog:reply_comment' comment.id %}" class="reply-form">
+                        <form method="post" action="{% url 'blog:reply_comment' comment.id %}" class="reply-form" data-comment-id="{{ comment.id }}">
                             {% csrf_token %}
                             <div class="form-group">
-                                <textarea name="body" class="form-control reply-textarea" placeholder="Write your reply here..." required></textarea>
+                                <textarea name="body" class="form-control reply-textarea" placeholder="Write your reply..." required></textarea>
                             </div>
                             <div class="reply-form-actions">
-                                <button type="submit" class="btn btn-sm btn-primary">Submit Reply</button>
-                                <button type="button" class="btn btn-sm btn-secondary cancel-reply-btn" data-comment-id="{{ comment.id }}">Cancel</button>
+                                <button type="submit" class="btn-primary submit-btn">Submit Reply</button>
+                                <button type="button" class="btn btn-secondary cancel-reply-btn" data-comment-id="{{ comment.id }}">Cancel</button>
                             </div>
                         </form>
                     </div>
@@ -692,6 +769,26 @@
 {% block extra_js %}
 <script>
 /* <![CDATA[ */
+    // Debug helper function
+    function logDebug(message, data) {
+        console.log(`%c[DEBUG] ${message}`, 'background: #f0f0f0; color: #0066cc; padding: 2px 5px; border-radius: 3px;', data);
+    }
+    
+    // Error handler function
+    function handleApiError(error, customMessage) {
+        const message = customMessage || 'An error occurred';
+        console.error(`%c[ERROR] ${message}`, 'background: #ffeeee; color: #cc0000; padding: 2px 5px; border-radius: 3px;', error);
+        return error;
+    }
+    
+    // Performance tracking
+    function trackPerformance(action, startTime) {
+        const endTime = performance.now();
+        const duration = endTime - startTime;
+        logDebug(`Performance: ${action} completed in ${duration.toFixed(2)}ms`);
+        return duration;
+    }
+    
     // Like functionality
     document.getElementById('likeButton').addEventListener('click', function(e) {
         e.preventDefault();
@@ -703,6 +800,9 @@
             window.location.href = loginUrl;
             return;
         }
+        
+        // Add loading state
+        this.classList.add('btn-loading');
         
         console.log('Sending like request to: {% url "blog:like_post" post.slug %}');
         
@@ -727,6 +827,9 @@
             return response.json();
         })
         .then(data => {
+            // Remove loading state
+            this.classList.remove('btn-loading');
+            
             console.log('Like response data:', data);
             // Update like count
             document.getElementById('likeCount').textContent = data.likes_count;
@@ -735,6 +838,11 @@
             if (data.status === 'liked') {
                 this.classList.add('liked');
                 this.querySelector('i').className = 'fas fa-heart';
+                // Add animation
+                this.querySelector('i').classList.add('fa-beat');
+                setTimeout(() => {
+                    this.querySelector('i').classList.remove('fa-beat');
+                }, 800);
             } else {
                 this.classList.remove('liked');
                 this.querySelector('i').className = 'fas fa-heart';
@@ -742,7 +850,33 @@
         })
         .catch(error => {
             console.error('Like error:', error);
-            alert('Unable to like this post. Please try again later.');
+            // Remove loading state
+            this.classList.remove('btn-loading');
+            
+            // Show tooltip error
+            const tooltip = document.createElement('div');
+            tooltip.className = 'tooltip-error';
+            tooltip.textContent = 'Unable to like this post. Please try again later.';
+            tooltip.style.position = 'absolute';
+            tooltip.style.backgroundColor = 'rgba(220, 53, 69, 0.9)';
+            tooltip.style.color = '#fff';
+            tooltip.style.padding = '5px 10px';
+            tooltip.style.borderRadius = '3px';
+            tooltip.style.fontSize = '12px';
+            tooltip.style.zIndex = '1000';
+            tooltip.style.pointerEvents = 'none';
+            
+            document.body.appendChild(tooltip);
+            
+            // Position tooltip
+            const rect = this.getBoundingClientRect();
+            tooltip.style.left = rect.left + 'px';
+            tooltip.style.top = (rect.bottom + 5) + 'px';
+            
+            // Remove tooltip after 2 seconds
+            setTimeout(() => {
+                tooltip.remove();
+            }, 2000);
         });
     });
     
@@ -757,6 +891,9 @@
             window.location.href = loginUrl;
             return;
         }
+        
+        // Add loading state
+        this.classList.add('btn-loading');
         
         console.log('Sending favorite request to: {% url "blog:favorite_post" post.slug %}');
         
@@ -781,6 +918,9 @@
             return response.json();
         })
         .then(data => {
+            // Remove loading state
+            this.classList.remove('btn-loading');
+            
             console.log('Favorite response data:', data);
             // Update favorite count
             document.getElementById('favoriteCount').textContent = data.favorites_count;
@@ -789,6 +929,11 @@
             if (data.status === 'favorited') {
                 this.classList.add('favorited');
                 this.querySelector('i').className = 'fas fa-bookmark';
+                // Add animation
+                this.querySelector('i').classList.add('fa-bounce');
+                setTimeout(() => {
+                    this.querySelector('i').classList.remove('fa-bounce');
+                }, 800);
             } else {
                 this.classList.remove('favorited');
                 this.querySelector('i').className = 'fas fa-bookmark';
@@ -796,7 +941,33 @@
         })
         .catch(error => {
             console.error('Favorite error:', error);
-            alert('Unable to favorite this post. Please try again later.');
+            // Remove loading state
+            this.classList.remove('btn-loading');
+            
+            // Show tooltip error
+            const tooltip = document.createElement('div');
+            tooltip.className = 'tooltip-error';
+            tooltip.textContent = 'Unable to favorite this post. Please try again later.';
+            tooltip.style.position = 'absolute';
+            tooltip.style.backgroundColor = 'rgba(220, 53, 69, 0.9)';
+            tooltip.style.color = '#fff';
+            tooltip.style.padding = '5px 10px';
+            tooltip.style.borderRadius = '3px';
+            tooltip.style.fontSize = '12px';
+            tooltip.style.zIndex = '1000';
+            tooltip.style.pointerEvents = 'none';
+            
+            document.body.appendChild(tooltip);
+            
+            // Position tooltip
+            const rect = this.getBoundingClientRect();
+            tooltip.style.left = rect.left + 'px';
+            tooltip.style.top = (rect.bottom + 5) + 'px';
+            
+            // Remove tooltip after 2 seconds
+            setTimeout(() => {
+                tooltip.remove();
+            }, 2000);
         });
     });
     
@@ -805,6 +976,9 @@
         button.addEventListener('click', function() {
             const commentId = this.getAttribute('data-comment-id');
             const likeCountSpan = this.querySelector('.like-count');
+            
+            // Add loading state
+            this.classList.add('btn-loading');
             
             fetch('{% url "blog:like_comment" "0" %}'.replace('0', commentId), {
                 method: 'POST',
@@ -826,11 +1000,20 @@
                 return response.json();
             })
             .then(data => {
-                if (data && (data.status === 'liked' || data.status === 'unliked')) {
+                // Remove loading state
+                this.classList.remove('btn-loading');
+                
+                if (data && data.success) {
                     likeCountSpan.textContent = data.likes_count;
                     
                     if (data.status === 'liked') {
                         this.classList.add('liked');
+                        // Add a pulse animation to the heart
+                        const heart = this.querySelector('i');
+                        heart.classList.add('fa-beat');
+                        setTimeout(() => {
+                            heart.classList.remove('fa-beat');
+                        }, 800);
                     } else {
                         this.classList.remove('liked');
                     }
@@ -838,12 +1021,37 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Failed to like this comment. Please try again.');
+                // Remove loading state
+                this.classList.remove('btn-loading');
+                // Show error message as tooltip
+                const tooltip = document.createElement('div');
+                tooltip.className = 'tooltip-error';
+                tooltip.textContent = 'Failed to like comment';
+                tooltip.style.position = 'absolute';
+                tooltip.style.backgroundColor = 'rgba(220, 53, 69, 0.9)';
+                tooltip.style.color = '#fff';
+                tooltip.style.padding = '5px 10px';
+                tooltip.style.borderRadius = '3px';
+                tooltip.style.fontSize = '12px';
+                tooltip.style.zIndex = '1000';
+                tooltip.style.pointerEvents = 'none';
+                
+                document.body.appendChild(tooltip);
+                
+                // Position tooltip
+                const rect = this.getBoundingClientRect();
+                tooltip.style.left = rect.left + 'px';
+                tooltip.style.top = (rect.bottom + 5) + 'px';
+                
+                // Remove tooltip after 2 seconds
+                setTimeout(() => {
+                    tooltip.remove();
+                }, 2000);
             });
         });
     });
     
-    // Prevent non-authenticated users from clicking action buttons
+    // 修改文档加载事件，添加全局事件委托
     document.addEventListener('DOMContentLoaded', function() {
         // Check authentication status
         var isNotAuthenticated = document.querySelector('.article-container').getAttribute('data-user-authenticated') !== 'true';
@@ -875,105 +1083,153 @@
                 
                 const formData = new FormData(this);
                 
+                // Get submit button and show loading state
+                const submitBtn = this.querySelector('button[type="submit"]');
+                submitBtn.classList.add('btn-loading');
+                submitBtn.disabled = true;
+                
+                // Show loading message
+                const loadingMsg = document.createElement('div');
+                loadingMsg.className = 'alert alert-info mt-2';
+                loadingMsg.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Submitting comment...';
+                commentForm.appendChild(loadingMsg);
+                
+                // Submit the form directly
                 fetch(this.action, {
                     method: 'POST',
                     body: formData,
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    credentials: 'same-origin'
+                    }
                 })
                 .then(response => {
-                    if (response.redirected) {
-                        window.location.href = response.url;
-                        return;
-                    }
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data && data.status === 'success') {
-                        // Clear comment box
-                        textArea.value = '';
-                        // Refresh page to show new comment
-                        window.location.reload();
-                    }
+                    // Just reload the page to show the new comment
+                    window.location.reload();
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Failed to submit your comment. Please try again.');
+                    submitBtn.classList.remove('btn-loading');
+                    submitBtn.disabled = false;
+                    loadingMsg.remove();
+                    
+                    // Show error message
+                    const errorMsg = document.createElement('div');
+                    errorMsg.className = 'alert alert-danger mt-2';
+                    errorMsg.innerHTML = '<i class="fas fa-exclamation-circle"></i> Failed to submit comment. Please try again.';
+                    commentForm.appendChild(errorMsg);
                 });
             });
         }
-    });
-    
-    // Reply Comment Functionality
-    document.querySelectorAll('.reply-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const commentId = this.getAttribute('data-comment-id');
-            const replyForm = document.getElementById(`reply-form-${commentId}`);
+        
+        // Reply button event delegation
+        document.body.addEventListener('click', function(e) {
+            // Handle reply buttons
+            if (e.target && (e.target.classList.contains('reply-btn') || e.target.closest('.reply-btn'))) {
+                e.preventDefault();
+                const button = e.target.classList.contains('reply-btn') ? e.target : e.target.closest('.reply-btn');
+                const commentId = button.getAttribute('data-comment-id');
+                const replyForm = document.getElementById(`reply-form-${commentId}`);
+                
+                if (replyForm) {
+                    // Hide all other reply forms first
+                    document.querySelectorAll('.reply-form-container').forEach(form => {
+                        if (form.id !== `reply-form-${commentId}`) {
+                            form.style.display = 'none';
+                        }
+                    });
+                    
+                    // Toggle this reply form
+                    if (replyForm.style.display === 'none' || replyForm.style.display === '') {
+                        replyForm.style.display = 'block';
+                        // Focus on textarea
+                        setTimeout(() => {
+                            const textarea = replyForm.querySelector('textarea');
+                            if (textarea) textarea.focus();
+                        }, 100);
+                    } else {
+                        replyForm.style.display = 'none';
+                    }
+                }
+            }
             
-            // Toggle visibility
-            if (replyForm.style.display === 'none' || replyForm.style.display === '') {
-                replyForm.style.display = 'block';
-            } else {
-                replyForm.style.display = 'none';
+            // Handle cancel buttons
+            if (e.target && (e.target.classList.contains('cancel-reply-btn') || e.target.closest('.cancel-reply-btn'))) {
+                e.preventDefault();
+                const button = e.target.classList.contains('cancel-reply-btn') ? e.target : e.target.closest('.cancel-reply-btn');
+                const commentId = button.getAttribute('data-comment-id');
+                const replyForm = document.getElementById(`reply-form-${commentId}`);
+                
+                if (replyForm) {
+                    replyForm.style.display = 'none';
+                }
+            }
+            
+            // Handle like buttons
+            if (e.target && (e.target.classList.contains('like-comment-btn') || e.target.closest('.like-comment-btn'))) {
+                e.preventDefault();
+                const button = e.target.classList.contains('like-comment-btn') ? e.target : e.target.closest('.like-comment-btn');
+                const commentId = button.getAttribute('data-comment-id');
+                const likeCountSpan = button.querySelector('.like-count');
+                
+                // Add loading state
+                button.classList.add('btn-loading');
+                
+                fetch('{% url "blog:like_comment" "0" %}'.replace('0', commentId), {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('input[name="csrfmiddlewaretoken"]').value,
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => {
+                    // Just reload the page after liking
+                    window.location.reload();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    button.classList.remove('btn-loading');
+                });
             }
         });
-    });
-    
-    document.querySelectorAll('.cancel-reply-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const commentId = this.getAttribute('data-comment-id');
-            const replyForm = document.getElementById(`reply-form-${commentId}`);
-            replyForm.style.display = 'none';
-        });
-    });
-    
-    // Submit reply form
-    document.querySelectorAll('.reply-form').forEach(form => {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const commentId = this.getAttribute('data-comment-id');
-            const textarea = this.querySelector('textarea');
-            const content = textarea.value.trim();
-            
-            if (!content) return;
-            
-            const formData = new FormData(this);
-            
-            fetch(this.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                credentials: 'same-origin'
-            })
-            .then(response => {
-                if (response.redirected) {
-                    window.location.href = response.url;
+        
+        // Form submit delegation for reply forms
+        document.body.addEventListener('submit', function(e) {
+            if (e.target && e.target.classList.contains('reply-form')) {
+                e.preventDefault();
+                const form = e.target;
+                const textarea = form.querySelector('textarea');
+                const content = textarea.value.trim();
+                
+                if (!content) {
+                    alert('Please enter a reply');
                     return;
                 }
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data && data.status === 'success') {
-                    // Clear reply box
-                    textarea.value = '';
-                    // Refresh page to show new reply
+                
+                const submitBtn = form.querySelector('button[type="submit"]');
+                submitBtn.classList.add('btn-loading');
+                submitBtn.disabled = true;
+                
+                const formData = new FormData(form);
+                
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => {
+                    // Just reload the page to show the new reply
                     window.location.reload();
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Failed to submit your reply. Please try again.');
-            });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    submitBtn.classList.remove('btn-loading');
+                    submitBtn.disabled = false;
+                    alert('Failed to submit reply. Please try again.');
+                });
+            }
         });
     });
 /* ]]> */

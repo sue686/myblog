@@ -139,6 +139,9 @@ def post_detail(request, slug=None, id=None, by_id=False):
 @login_required
 def add_comment(request, slug=None, pk=None, id=None, by_id=False):
     """Add comment"""
+    # Record start time for performance tracking
+    start_time = time.time()
+    
     # Determine how to query the post based on parameters
     if by_id and id is not None:
         post = get_object_or_404(Post, id=id)
@@ -176,12 +179,31 @@ def add_comment(request, slug=None, pk=None, id=None, by_id=False):
         cache_key = f"user_posts:{post.author.username}"
         cache.delete(cache_key)
         
+        # Clear post detail cache to immediately show new comment
+        if by_id and id is not None:
+            post_cache_key = f"post_detail:id:{id}"
+        else:
+            post_cache_key = f"post_detail:{post.slug}"
+        cache.delete(post_cache_key)
+        
+        # Record and log performance
+        processing_time = time.time() - start_time
+        logger.debug(f"add_comment processing time: {processing_time:.4f} seconds")
+        
         # Handle AJAX requests
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({
                 'status': 'success',
                 'message': 'Comment posted successfully',
-                'comment_id': comment.id
+                'comment_id': comment.id,
+                'processing_time': processing_time,
+                'comment': {
+                    'id': comment.id,
+                    'content': comment.content,
+                    'author_username': comment.author.username,
+                    'created_at': comment.created_at.strftime('%B %d, %Y'),
+                    'likes_count': 0
+                }
             })
         
         # Redirect to post detail page
@@ -795,26 +817,36 @@ def like_comment(request, comment_id):
     # Get latest like count
     likes_count = comment.likes.count()
     
+    # Clear post detail cache to reflect changes immediately
+    post = comment.post
+    post_cache_key = f"post_detail:{post.slug}"
+    cache.delete(post_cache_key)
+    post_id_cache_key = f"post_detail:id:{post.id}"
+    cache.delete(post_id_cache_key)
+    
     # Return JSON response
     return JsonResponse({
         'success': True,
-        'liked': liked,
+        'status': 'unliked' if not liked else 'liked',
         'likes_count': likes_count
     })
 
 @login_required
 def reply_comment(request, comment_id):
     """Reply to comment"""
+    # Record start time for performance tracking
+    start_time = time.time()
+    
     parent_comment = get_object_or_404(Comment, id=comment_id)
     post = parent_comment.post
     
     if request.method == 'POST':
-        content = request.POST.get('content', '').strip()
+        content = request.POST.get('body', '').strip()
         
         if not content:
             return JsonResponse({
                 'success': False,
-                'message': 'Comment content cannot be empty'
+                'message': '评论内容不能为空'
             })
         
         # Create new reply comment
@@ -826,12 +858,32 @@ def reply_comment(request, comment_id):
         )
         reply.save()
         
+        # Clear post detail cache to immediately show new reply
+        post_cache_key = f"post_detail:{post.slug}"
+        cache.delete(post_cache_key)
+        
+        # Also clear by ID cache if applicable
+        post_id_cache_key = f"post_detail:id:{post.id}"
+        cache.delete(post_id_cache_key)
+        
+        # Record and log performance
+        processing_time = time.time() - start_time
+        logger.debug(f"reply_comment processing time: {processing_time:.4f} seconds")
+        
         # Handle AJAX requests
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({
                 'success': True,
-                'message': 'Reply successful',
-                'comment_id': reply.id
+                'status': 'success',
+                'message': '回复成功',
+                'processing_time': processing_time,
+                'comment_id': reply.id,
+                'reply': {
+                    'id': reply.id,
+                    'content': reply.content,
+                    'author_username': reply.author.username,
+                    'created_at': reply.created_at.strftime('%B %d, %Y')
+                }
             })
         
         # Non-AJAX requests redirect to post detail page
@@ -839,5 +891,5 @@ def reply_comment(request, comment_id):
     
     return JsonResponse({
         'success': False,
-        'message': 'Please use POST method to submit reply'
+        'message': '请使用POST方法提交回复'
     })
