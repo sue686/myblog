@@ -1081,42 +1081,28 @@
                     return;
                 }
                 
+                // Show submitting message
+                const statusDiv = document.createElement('div');
+                statusDiv.className = 'alert alert-info mt-2';
+                statusDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting comment...';
+                commentForm.appendChild(statusDiv);
+                
+                // Submit form and refresh page on success
                 const formData = new FormData(this);
                 
-                // Get submit button and show loading state
-                const submitBtn = this.querySelector('button[type="submit"]');
-                submitBtn.classList.add('btn-loading');
-                submitBtn.disabled = true;
-                
-                // Show loading message
-                const loadingMsg = document.createElement('div');
-                loadingMsg.className = 'alert alert-info mt-2';
-                loadingMsg.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Submitting comment...';
-                commentForm.appendChild(loadingMsg);
-                
-                // Submit the form directly
                 fetch(this.action, {
                     method: 'POST',
                     body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
+                    credentials: 'same-origin'
                 })
                 .then(response => {
-                    // Just reload the page to show the new comment
+                    // Refresh the page regardless of the response
                     window.location.reload();
                 })
                 .catch(error => {
+                    // If there's an error, also refresh the page
                     console.error('Error:', error);
-                    submitBtn.classList.remove('btn-loading');
-                    submitBtn.disabled = false;
-                    loadingMsg.remove();
-                    
-                    // Show error message
-                    const errorMsg = document.createElement('div');
-                    errorMsg.className = 'alert alert-danger mt-2';
-                    errorMsg.innerHTML = '<i class="fas fa-exclamation-circle"></i> Failed to submit comment. Please try again.';
-                    commentForm.appendChild(errorMsg);
+                    window.location.reload();
                 });
             });
         }

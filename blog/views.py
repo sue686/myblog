@@ -37,7 +37,7 @@ def calculate_recommendation_score(post):
 def post_detail(request, slug=None, id=None, by_id=False):
     """Post detail view"""
     # Record performance
-    start_time = time.time()
+        start_time = time.time()
     
     # Find by ID or slug
     if by_id and id is not None:
@@ -60,7 +60,7 @@ def post_detail(request, slug=None, id=None, by_id=False):
             slug=slug
         )
         cache_key = f"post_detail:{slug}"
-    else:
+        else:
         # No ID or slug provided, return 404
         raise Http404("Post not found - no identifier provided")
     
@@ -135,7 +135,7 @@ def post_detail(request, slug=None, id=None, by_id=False):
     logger.debug(f"post_detail view time: {time.time() - start_time:.4f} seconds")
     
     return render(request, 'blog/post_detail.html', context)
-    
+
 @login_required
 def add_comment(request, slug=None, pk=None, id=None, by_id=False):
     """Add comment"""
@@ -152,7 +152,7 @@ def add_comment(request, slug=None, pk=None, id=None, by_id=False):
         redirect_name = 'blog:post_detail_by_id'
         redirect_kwargs = {'pk': pk}
     elif slug is not None:
-        post = get_object_or_404(Post, slug=slug)
+    post = get_object_or_404(Post, slug=slug)
         redirect_name = 'blog:post_detail'
         redirect_kwargs = {'slug': slug}
     else:
@@ -219,7 +219,7 @@ def like_post(request, slug=None, id=None, by_id=False):
         redirect_name = 'blog:post_detail_id'
         redirect_kwargs = {'id': id, 'by_id': True}
     elif slug is not None:
-        post = get_object_or_404(Post, slug=slug)
+    post = get_object_or_404(Post, slug=slug)
         redirect_name = 'blog:post_detail'
         redirect_kwargs = {'slug': slug}
     else:
@@ -240,7 +240,7 @@ def like_post(request, slug=None, id=None, by_id=False):
     # Update recommendation score
     try:
         if hasattr(post, 'recommendation_score'):
-            post.recommendation_score = calculate_recommendation_score(post)
+        post.recommendation_score = calculate_recommendation_score(post)
             post.save(update_fields=['recommendation_score'])  # Only update recommendation score field
     except Exception as e:
         logger.error(f"Error updating recommendation score: {e}")
@@ -279,10 +279,10 @@ def favorite_post(request, slug=None, id=None, by_id=False):
         redirect_name = 'blog:post_detail_id'
         redirect_kwargs = {'id': id, 'by_id': True}
     elif slug is not None:
-        post = get_object_or_404(
-            Post.objects.select_related('author').prefetch_related('favorites'), 
-            slug=slug
-        )
+    post = get_object_or_404(
+        Post.objects.select_related('author').prefetch_related('favorites'), 
+        slug=slug
+    )
         redirect_name = 'blog:post_detail'
         redirect_kwargs = {'slug': slug}
     else:
@@ -307,8 +307,8 @@ def favorite_post(request, slug=None, id=None, by_id=False):
     try:
         if hasattr(post, 'recommendation_score'):
             # Only update necessary fields to reduce database operations
-            post.recommendation_score = calculate_recommendation_score(post)
-            post.save(update_fields=['recommendation_score'])
+        post.recommendation_score = calculate_recommendation_score(post)
+        post.save(update_fields=['recommendation_score'])
     except Exception as e:
         logger.error(f"Error updating recommendation score: {e}")
     
@@ -334,7 +334,7 @@ def edit_post(request, slug=None, id=None, by_id=False):
         redirect_name = 'blog:post_detail_id'
         redirect_kwargs = {'id': id, 'by_id': True}
     elif slug is not None:
-        post = get_object_or_404(Post, slug=slug, author=request.user)
+    post = get_object_or_404(Post, slug=slug, author=request.user)
         redirect_name = 'blog:post_detail'
         redirect_kwargs = {'slug': slug}
     else:
@@ -353,7 +353,7 @@ def edit_post(request, slug=None, id=None, by_id=False):
             
             # If slug has changed, redirect using the new slug
             if slug is not None and updated_post.slug != slug:
-                return redirect('blog:post_detail', slug=updated_post.slug)
+            return redirect('blog:post_detail', slug=updated_post.slug)
             # Otherwise use the original redirect parameters
             return redirect(redirect_name, **redirect_kwargs)
     else:
@@ -368,7 +368,7 @@ def delete_post(request, slug=None, id=None, by_id=False):
     if by_id and id is not None:
         post = get_object_or_404(Post, id=id, author=request.user)
     elif slug is not None:
-        post = get_object_or_404(Post, slug=slug, author=request.user)
+    post = get_object_or_404(Post, slug=slug, author=request.user)
     else:
         raise Http404("Post not found - no identifier provided")
     
@@ -563,7 +563,7 @@ def create_post(request):
                     # Add a random string to ensure uniqueness
                     unique_id = str(uuid.uuid4())[:8]
                     post.slug = f"{base_slug}-{unique_id}"
-                else:
+    else:
                     post.slug = base_slug
             
             post.save()
@@ -676,7 +676,7 @@ class CategoryDetailView:
             # Get all published posts in this category
             posts = Post.objects.filter(
                 category=category,
-                is_published=True
+            is_published=True
             ).order_by('-created_at')
             
             context = {
@@ -718,16 +718,16 @@ class SearchResultsView:
         def view(request):
             query = request.GET.get('q', '')
             
-            if query:
+        if query:
                 # Use Q objects for advanced search
                 from django.db.models import Q
                 posts = Post.objects.filter(
-                    Q(title__icontains=query) | 
+                Q(title__icontains=query) | 
                     Q(content__icontains=query) |
                     Q(author__username__icontains=query) |
                     Q(category__name__icontains=query) |
                     Q(tags__name__icontains=query),
-                    is_published=True
+                is_published=True
                 ).select_related('author', 'category').distinct().order_by('-created_at')
             else:
                 posts = Post.objects.none()
