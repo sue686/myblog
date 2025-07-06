@@ -434,6 +434,28 @@
                             {% endif %}
                         </div>
                         
+                        <!-- 发布状态 -->
+                        <div class="form-section">
+                            <h4 class="form-section-title">Publishing</h4>
+                            
+                            <div class="mb-4 form-field-fade" style="animation-delay: 0.4s">
+                                <div class="form-check form-switch">
+                                    {{ form.is_published }}
+                                    <label class="form-check-label" for="{{ form.is_published.id_for_label }}">
+                                        <i class="fas fa-globe me-2"></i> Publish Article
+                                    </label>
+                                    <div class="form-text text-muted mt-2">
+                                        Turn this on to make your article visible to all visitors. Leave unchecked to save as draft.
+                                    </div>
+                                </div>
+                                {% if form.is_published.errors %}
+                                <div class="text-danger mt-2">
+                                    {{ form.is_published.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
                         <div class="btn-action-group">
                             <a href="{% url 'blog:index' %}" class="btn btn-cancel">
                                 <i class="fas fa-times me-2"></i>Cancel

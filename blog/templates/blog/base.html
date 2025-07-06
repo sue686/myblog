@@ -55,7 +55,7 @@
                     </li>
                     {% endif %}
                     <li class="nav-item">
-                        <a class="nav-link {% if 'about' in request.path %}active{% endif %}" href="{% url 'blog:about_me' %}">
+                        <a class="nav-link {% if 'about' in request.path %}active{% endif %}" href="{% url 'blog:about' %}">
                             <i class="bi bi-info-circle"></i> About Me
                         </a>
                     </li>
@@ -157,7 +157,7 @@
                     <h5>Quick Links</h5>
                     <div class="footer-links">
                         <a href="{% url 'blog:index' %}"><i class="fas fa-chevron-right me-2"></i>Home</a>
-                        <a href="{% url 'blog:about_me' %}"><i class="fas fa-chevron-right me-2"></i>About</a>
+                        <a href="{% url 'blog:about' %}"><i class="fas fa-chevron-right me-2"></i>About</a>
                         <a href="{% url 'blog:categories_list' %}"><i class="fas fa-chevron-right me-2"></i>Categories</a>
                         {% if user.is_authenticated %}
                         <a href="{% url 'blog:user-posts' user.username %}"><i class="fas fa-chevron-right me-2"></i>My Articles</a>
@@ -169,9 +169,9 @@
                 <div class="col-lg-4">
                     <h5>Contact Us</h5>
                     <address class="text-muted mb-3">
-                        <p><i class="fas fa-map-marker-alt me-2"></i>123 Blog Street, Sydney, NSW 2000</p>
-                        <p><i class="fas fa-envelope me-2"></i>contact@selwynblog.com</p>
-                        <p><i class="fas fa-phone me-2"></i>+61 2 1234 5678</p>
+                        <p><i class="fas fa-map-marker-alt me-2"></i>Ashfield, Sydney</p>
+                        <p><i class="fas fa-envelope me-2"></i>surng123@gmail.com</p>
+                        <p><i class="fas fa-phone me-2"></i>+61432593618</p>
                     </address>
                 </div>
             </div>

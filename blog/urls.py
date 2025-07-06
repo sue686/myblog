@@ -4,14 +4,29 @@ from .views import (
     favorite_post, create_post, edit_post, delete_post,
     index, my_favorites, upload_image,
     CategoryListView, CategoryDetailView, SearchResultsView,
-    UserPostListView, TagDetailView, about_me
+    UserPostListView, TagDetailView, about_view, about_edit_view, 
+    about_profile_edit_view, about_summary_edit_view, about_work_edit_view, 
+    about_work_delete_view, about_skills_edit_view, about_education_edit_view, 
+    about_work_add_view, about_work_bulk_edit_view, about_skills_bulk_edit_view, 
+    about_education_bulk_edit_view
 )
 
 app_name = 'blog'
 
 urlpatterns = [
     path('', index, name='index'),
-    path('about/', about_me, name='about_me'),
+    path('about/', about_view, name='about'),
+    path('about/edit/', about_edit_view, name='about_edit'),
+    path('about/profile/edit/', about_profile_edit_view, name='about_profile_edit'),
+    path('about/summary/edit/', about_summary_edit_view, name='about_summary_edit'),
+    path('about/work/<int:job_id>/edit/', about_work_edit_view, name='about_work_edit'),
+    path('about/work/<int:job_id>/delete/', about_work_delete_view, name='about_work_delete'),
+    path('about/skills/edit/', about_skills_edit_view, name='about_skills_edit'),
+    path('about/skills/bulk_edit/', about_skills_bulk_edit_view, name='about_skills_bulk_edit'),
+    path('about/education/edit/', about_education_edit_view, name='about_education_edit'),
+    path('about/education/bulk_edit/', about_education_bulk_edit_view, name='about_education_bulk_edit'),
+    path('about/work/add/', about_work_add_view, name='about_work_add'),
+    path('about/work/bulk_edit/', about_work_bulk_edit_view, name='about_work_bulk_edit'),
     path('categories/', CategoryListView.as_view(), name='categories_list'),
     path('category/<slug:slug>/', CategoryDetailView.as_view(), name='category_posts'),
     path('tag/<slug:slug>/', TagDetailView.as_view(), name='tag_posts'),

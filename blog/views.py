@@ -16,6 +16,16 @@ from django.utils.text import slugify
 import uuid
 from django.contrib.auth import get_user_model
 from django.db.models import F
+from django.contrib.admin.views.decorators import staff_member_required
+from django.db.models import Sum
+from .models import AboutPageContent
+from django import forms
+from django.contrib.auth.decorators import user_passes_test
+from .models import (
+    AboutProfile, AboutSummary, WorkExperience, WorkResponsibility,
+    SkillGroup, SkillItem, EducationExperience, EducationProject, EducationCourse
+)
+from django.views.decorators.http import require_POST
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -417,173 +427,6 @@ def index(request):
     
     return render(request, 'blog/home.html', context)
 
-def about_me(request):
-    """About me page"""
-    # 创建简历数据
-    resume = {
-        'name': 'Selwyn Liu',
-        'email': 'sunnyl23@gmail.com',
-        'phone': '0432593618',
-        'summary': """
-            <p>Experienced IT Support Officer with a strong background in technical troubleshooting, network security, and system administration. Adept at resolving 50+ IT support tickets per month, ensuring 99% system uptime, and optimizing IT workflows to enhance user experience. Proficient in Active Directory, ITIL Framework, Jira, ServiceNow, and IT asset management. Strong problem-solving, communication, and time management skills, dedicated to providing high-quality IT support and reducing downtime.</p>
-        """,
-        'experience': [
-            {
-                'position': 'IT Support Officer',
-                'company': 'Wellington Education Group',
-                'location': 'Sydney, Australia',
-                'period': '07/2024 - Present',
-                'responsibilities': [
-                    'Provided IT Help Desk support for 100+ students and staff, reducing downtime by 20%',
-                    'Managed network security and IT infrastructure, ensuring 99% system availability',
-                    'Handled 50+ technical support tickets per month, troubleshooting hardware, software, and connectivity issues',
-                    'Administered Active Directory, managing user accounts, group policies, and access controls',
-                    'Oversaw Google Workspace & Office 365 administration, optimizing email and cloud service performance',
-                    'Conducted IT training and onboarding for new employees, reducing onboarding time by 25%',
-                    'Maintained IT asset records and inventory, ensuring efficient resource allocation'
-                ]
-            },
-            {
-                'position': 'Front-end Developer',
-                'company': 'Urban Construction Bureau',
-                'location': 'Henan, China',
-                'period': '11/2022 - 02/2023',
-                'responsibilities': [
-                    'Conducted a thorough analysis of existing web page structures and technical architecture to identify improvement opportunities',
-                    'Optimized web content and headlines, increasing search engine visibility by 20%',
-                    'Developed responsive web pages using Vue.js, enhancing user experience across multiple devices',
-                    'Collaborated with back-end developers, reducing bug reports by 30%. Enhanced code quality and performed data analysis using jQuery',
-                    'Managed the content updates and optimization of the Urban Construction Bureau\'s website to ensure accurate information dissemination'
-                ]
-            },
-            {
-                'position': 'Site Engineer',
-                'company': 'Outsourcing engineering company',
-                'location': 'Henan, China',
-                'period': '10/2023 - 01/2024',
-                'responsibilities': [
-                    'Analyzed current processes, labor mobility, and material costs to propose efficiency improvements and cost reductions',
-                    'Communicated with environmental design engineers to gather feedback and suggestions',
-                    'Engaged with site staff to ensure understanding and implementation of best practices'
-                ]
-            }
-        ],
-        'skills': [
-            {
-                'category': 'Languages',
-                'items': ['English', 'Mandarin']
-            },
-            {
-                'category': 'IT Systems Maintenance & Troubleshooting',
-                'items': ['Help Desk support', 'Hardware/software troubleshooting', 'System maintenance']
-            },
-            {
-                'category': 'Network Security & Firewall Management',
-                'items': ['TCP/IP', 'DNS', 'DHCP', 'VPN configuration', 'Network firewall security measures']
-            },
-            {
-                'category': 'Email & Web Hosting Administration',
-                'items': ['Google Workspace', 'Office 365', 'Email hosting services']
-            },
-            {
-                'category': 'Active Directory & User Management',
-                'items': ['Directory setup', 'User account creation', 'Group permission control']
-            },
-            {
-                'category': 'Cybersecurity & Data Protection',
-                'items': ['Antivirus software', 'Security patching', 'Data backup & recovery solutions']
-            },
-            {
-                'category': 'Database',
-                'items': ['MySQL', 'phpMyAdmin', 'Database design for web applications']
-            },
-            {
-                'category': 'Hardware & Software',
-                'items': ['Windows', 'MacOS', 'Linux', 'System Imaging & Deployment']
-            }
-        ],
-        'education': [
-            {
-                'degree': 'Master of Information of Technology, Major in Software Engineering',
-                'institution': 'University of Sydney',
-                'location': 'Sydney, Australia',
-                'period': '02/2022 - 07/2023',
-                'projects': [
-                    {
-                        'title': 'Thesis Project',
-                        'description': 'Developed a Pesticide Guide App to assist farmers in identifying pesticide information and implementing crop protection measures. The project utilized Vue.js for front-end development and Java to create RESTful API. Deployment was carried out using AWS EC2 services.'
-                    },
-                    {
-                        'title': 'Main Project',
-                        'description': 'Created a modern web application using Vue.js for the front-end, Spring framework for Java back-end development, and MySQL for database management.'
-                    }
-                ],
-                'courses': ['Model-Driven Software Engineering', 'Object-Oriented Application Frameworks', 'Visual Analytics', 'Project Management in IT']
-            },
-            {
-                'degree': 'Bachelor of Information of Technology, Major in Software Engineering',
-                'institution': 'University of RMIT',
-                'location': 'Melbourne, Australia',
-                'period': '02/2019 - 12/2021',
-                'projects': [
-                    {
-                        'title': 'Thesis project',
-                        'description': 'Designed and implemented a delivery system using HTML, CSS, PHP, and phpMyAdmin for backend database management. The system aimed to offer users a streamlined ordering service and provide merchants with an efficient order management platform.'
-                    },
-                    {
-                        'title': 'Main Project in university',
-                        'description': 'Developed a hotel web design using Miro for UI design and Vue.js for front-end, while the back-end was implemented using Java Hibernate.'
-                    }
-                ],
-                'courses': ['Cloud Computing', 'Professional Computing Practice', 'Programming Project', 'Database Management Systems']
-            }
-        ]
-    }
-    
-    return render(request, 'blog/about.html', {'resume': resume, 'title': 'About Me'})
-
-@login_required
-def create_post(request):
-    """Create post"""
-    if request.method == 'POST':
-        form = PostForm(request.POST, request.FILES)
-        if form.is_valid():
-            post = form.save(commit=False)
-            post.author = request.user
-            
-            # Handle slug
-            if not post.slug:
-                # If no slug provided, generate from title and ensure uniqueness
-                base_slug = slugify(post.title)
-                if not base_slug:
-                    base_slug = 'post'
-                
-                # Check if slug already exists
-                if Post.objects.filter(slug=base_slug).exists():
-                    # Add a random string to ensure uniqueness
-                    unique_id = str(uuid.uuid4())[:8]
-                    post.slug = f"{base_slug}-{unique_id}"
-                else:
-                    post.slug = base_slug
-            
-            post.save()
-            
-            # Save many-to-many relationships
-            form.save_m2m()
-            
-            messages.success(request, 'Post created successfully!')
-            return redirect('blog:post_detail', slug=post.slug)
-    else:
-        form = PostForm()
-    
-    context = {
-        'form': form,
-        'categories': Category.objects.all(),
-        'tags': Tag.objects.all(),
-    }
-    
-    return render(request, 'blog/create_post.html', context)
-
 class UserPostListView:
     """User post list view"""
     @classmethod
@@ -893,3 +736,386 @@ def reply_comment(request, comment_id):
         'success': False,
         'message': '请使用POST方法提交回复'
     })
+
+@staff_member_required
+def admin_dashboard(request):
+    """Custom admin dashboard view"""
+    User = get_user_model()
+    context = {
+        'total_posts': Post.objects.count(),
+        'total_users': User.objects.count(),
+        'total_comments': Comment.objects.count(),
+        'total_views': Post.objects.aggregate(total_views=Sum('views'))['total_views'] or 0,
+        'total_categories': Category.objects.count(),
+        'total_tags': Tag.objects.count(),
+    }
+    return render(request, 'admin/index.html', context)
+
+class AboutPageContentForm(forms.ModelForm):
+    class Meta:
+        model = AboutPageContent
+        fields = ['html_content']
+        widgets = {
+            'html_content': forms.Textarea(attrs={'rows': 30, 'style': 'font-family:monospace;font-size:1rem;width:100%;'}),
+        }
+
+def about_view(request):
+    # 查询所有分块数据
+    profile = AboutProfile.objects.order_by('-updated_at').first()
+    summary = AboutSummary.objects.order_by('-updated_at').first()
+    work_experiences_qs = WorkExperience.objects.prefetch_related('responsibilities').order_by('order', '-updated_at')
+    work_experiences = []
+    for job in work_experiences_qs:
+        work_experiences.append({
+            'position': job.position,
+            'company': job.company,
+            'location': job.location,
+            'period': job.period,
+            'responsibilities': [resp.description for resp in job.responsibilities.all()]
+        })
+    # 转换技能组为可序列化格式
+    skill_groups_qs = SkillGroup.objects.prefetch_related('items').order_by('order')
+    skill_groups = []
+    for group in skill_groups_qs:
+        skill_groups.append({
+            'category': group.category,
+            'items': [{'name': item.name} for item in group.items.all()]
+        })
+    
+    # 转换教育经历为可序列化格式
+    educations_qs = EducationExperience.objects.prefetch_related('projects', 'courses').order_by('order', '-updated_at')
+    educations = []
+    for edu in educations_qs:
+        educations.append({
+            'degree': edu.degree,
+            'institution': edu.institution,
+            'location': edu.location,
+            'period': edu.period,
+            'projects': [{'title': proj.title} for proj in edu.projects.all()],
+            'courses': [{'name': course.name} for course in edu.courses.all()]
+        })
+    can_edit = request.user.is_authenticated and request.user.is_superuser
+    context = {
+        'profile': profile,
+        'summary': summary,
+        'work_experiences': work_experiences,
+        'work_experiences_qs': work_experiences_qs,
+        'skill_groups': skill_groups,
+        'skill_groups_qs': skill_groups_qs,
+        'educations': educations,
+        'educations_qs': educations_qs,
+        'can_edit': can_edit,
+    }
+    return render(request, 'blog/about.html', context)
+
+@user_passes_test(lambda u: u.is_superuser)
+def about_edit_view(request):
+    about_obj, _ = AboutPageContent.objects.get_or_create(pk=1)
+    if request.method == 'POST':
+        form = AboutPageContentForm(request.POST, instance=about_obj)
+        if form.is_valid():
+            form.save()
+            return redirect('blog:about')
+    else:
+        form = AboutPageContentForm(instance=about_obj)
+    return render(request, 'blog/about_edit.html', {'form': form})
+
+@user_passes_test(lambda u: u.is_superuser)
+@require_POST
+def about_profile_edit_view(request):
+    profile = AboutProfile.objects.order_by('-updated_at').first()
+    if not profile:
+        profile = AboutProfile()
+    profile.name = request.POST.get('name', profile.name)
+    profile.title = request.POST.get('title', profile.title)
+    profile.email = request.POST.get('email', profile.email)
+    profile.phone = request.POST.get('phone', profile.phone)
+    profile.location = request.POST.get('location', profile.location)
+    profile.save()
+    return redirect('blog:about')
+
+@user_passes_test(lambda u: u.is_superuser)
+@require_POST
+def about_summary_edit_view(request):
+    summary = AboutSummary.objects.order_by('-updated_at').first()
+    if not summary:
+        summary = AboutSummary()
+    summary.content = request.POST.get('content', summary.content)
+    summary.save()
+    return redirect('blog:about')
+
+@user_passes_test(lambda u: u.is_superuser)
+@require_POST
+def about_work_edit_view(request, job_id):
+    job = get_object_or_404(WorkExperience, id=job_id)
+    job.position = request.POST.get('position', job.position)
+    job.company = request.POST.get('company', job.company)
+    job.location = request.POST.get('location', job.location)
+    job.period = request.POST.get('period', job.period)
+    job.save()
+    # 更新职责
+    responsibilities = request.POST.get('responsibilities', '').splitlines()
+    job.responsibilities.all().delete()
+    for resp in responsibilities:
+        resp = resp.strip()
+        if resp:
+            WorkResponsibility.objects.create(work_experience=job, content=resp)
+    return redirect('blog:about')
+
+@user_passes_test(lambda u: u.is_superuser)
+@require_POST
+def about_work_delete_view(request, job_id):
+    job = get_object_or_404(WorkExperience, id=job_id)
+    job.delete()
+    return redirect('blog:about')
+
+@user_passes_test(lambda u: u.is_superuser)
+@require_POST
+def about_skills_edit_view(request):
+    import json
+    try:
+        data = json.loads(request.POST.get('skills_json', '[]'))
+        # 清空原有数据
+        SkillGroup.objects.all().delete()
+        for group in data:
+            group_obj = SkillGroup.objects.create(category=group.get('category', ''))
+            for item in group.get('items', []):
+                SkillItem.objects.create(group=group_obj, name=item.get('name', str(item)))
+        messages.success(request, 'Skills updated successfully!')
+    except Exception as e:
+        messages.error(request, f'Failed to update skills: {e}')
+    return redirect('blog:about')
+
+@user_passes_test(lambda u: u.is_superuser)
+@require_POST
+def about_skills_bulk_edit_view(request):
+    try:
+        categories = request.POST.getlist('categories[]')
+        skills_list = request.POST.getlist('skills[]')
+        
+        # 清空原有数据
+        SkillGroup.objects.all().delete()
+        
+        # 创建新的技能分组
+        for i in range(len(categories)):
+            if categories[i].strip():  # 只有分类名不为空才创建
+                group = SkillGroup.objects.create(
+                    category=categories[i].strip(),
+                    order=i + 1
+                )
+                
+                # 处理技能项目
+                if i < len(skills_list):
+                    skills_text = skills_list[i].strip()
+                    if skills_text:
+                        # 按行分割技能，并清理格式
+                        skills = [
+                            line.strip() 
+                            for line in skills_text.split('\n') 
+                            if line.strip()
+                        ]
+                        
+                        for j, skill in enumerate(skills):
+                            if skill:
+                                SkillItem.objects.create(
+                                    group=group,
+                                    name=skill,
+                                    order=j + 1
+                                )
+        
+        messages.success(request, 'Skills updated successfully!')
+    except Exception as e:
+        messages.error(request, f'Failed to update skills: {e}')
+    return redirect('blog:about')
+
+@user_passes_test(lambda u: u.is_superuser)
+@require_POST
+def about_education_edit_view(request):
+    import json
+    try:
+        data = json.loads(request.POST.get('education_json', '[]'))
+        # 清空原有数据
+        EducationExperience.objects.all().delete()
+        for edu in data:
+            edu_obj = EducationExperience.objects.create(
+                degree=edu.get('degree', ''),
+                institution=edu.get('institution', ''),
+                location=edu.get('location', ''),
+                period=edu.get('period', '')
+            )
+            for project in edu.get('projects', []):
+                EducationProject.objects.create(education=edu_obj, title=project.get('title', ''), description=project.get('description', ''))
+            for course in edu.get('courses', []):
+                EducationCourse.objects.create(education=edu_obj, name=course.get('name', str(course)))
+        messages.success(request, 'Education updated successfully!')
+    except Exception as e:
+        messages.error(request, f'Failed to update education: {e}')
+    return redirect('blog:about')
+
+@user_passes_test(lambda u: u.is_superuser)
+@require_POST
+def about_education_bulk_edit_view(request):
+    try:
+        degrees = request.POST.getlist('degrees[]')
+        institutions = request.POST.getlist('institutions[]')
+        locations = request.POST.getlist('locations[]')
+        periods = request.POST.getlist('periods[]')
+        projects_list = request.POST.getlist('projects[]')
+        courses_list = request.POST.getlist('courses[]')
+        
+        # 清空原有数据
+        EducationExperience.objects.all().delete()
+        
+        # 创建新的教育经历
+        for i in range(len(degrees)):
+            if degrees[i].strip():  # 只有学位不为空才创建
+                edu = EducationExperience.objects.create(
+                    degree=degrees[i].strip(),
+                    institution=institutions[i].strip() if i < len(institutions) else '',
+                    location=locations[i].strip() if i < len(locations) else '',
+                    period=periods[i].strip() if i < len(periods) else '',
+                    order=i + 1
+                )
+                
+                # 处理项目
+                if i < len(projects_list):
+                    projects_text = projects_list[i].strip()
+                    if projects_text:
+                        # 按行分割项目
+                        projects = [
+                            line.strip() 
+                            for line in projects_text.split('\n') 
+                            if line.strip()
+                        ]
+                        
+                        for j, project in enumerate(projects):
+                            if project:
+                                # 尝试分割项目标题和描述
+                                if ':' in project:
+                                    title, description = project.split(':', 1)
+                                    title = title.strip()
+                                    description = description.strip()
+                                else:
+                                    title = project
+                                    description = ''
+                                
+                                EducationProject.objects.create(
+                                    education=edu,
+                                    title=title,
+                                    description=description,
+                                    order=j + 1
+                                )
+                
+                # 处理课程
+                if i < len(courses_list):
+                    courses_text = courses_list[i].strip()
+                    if courses_text:
+                        # 按行分割课程
+                        courses = [
+                            line.strip() 
+                            for line in courses_text.split('\n') 
+                            if line.strip()
+                        ]
+                        
+                        for j, course in enumerate(courses):
+                            if course:
+                                EducationCourse.objects.create(
+                                    education=edu,
+                                    name=course,
+                                    order=j + 1
+                                )
+        
+        messages.success(request, 'Education updated successfully!')
+    except Exception as e:
+        messages.error(request, f'Failed to update education: {e}')
+    return redirect('blog:about')
+
+@user_passes_test(lambda u: u.is_superuser)
+@require_POST
+def about_work_add_view(request):
+    position = request.POST.get('position', '').strip()
+    company = request.POST.get('company', '').strip()
+    location = request.POST.get('location', '').strip()
+    period = request.POST.get('period', '').strip()
+    responsibilities = request.POST.get('responsibilities', '').splitlines()
+    if position:
+        job = WorkExperience.objects.create(position=position, company=company, location=location, period=period)
+        for resp in responsibilities:
+            resp = resp.strip()
+            if resp:
+                WorkResponsibility.objects.create(work_experience=job, content=resp)
+    return redirect('blog:about')
+
+@user_passes_test(lambda u: u.is_superuser)
+@require_POST
+def about_work_bulk_edit_view(request):
+    try:
+        positions = request.POST.getlist('positions[]')
+        companies = request.POST.getlist('companies[]')
+        locations = request.POST.getlist('locations[]')
+        periods = request.POST.getlist('periods[]')
+        responsibilities_list = request.POST.getlist('responsibilities[]')
+        
+        # 清空原有数据
+        WorkExperience.objects.all().delete()
+        
+        # 创建新的工作经历
+        for i in range(len(positions)):
+            if positions[i].strip():  # 只有职位不为空才创建
+                job = WorkExperience.objects.create(
+                    position=positions[i].strip(),
+                    company=companies[i].strip() if i < len(companies) else '',
+                    location=locations[i].strip() if i < len(locations) else '',
+                    period=periods[i].strip() if i < len(periods) else '',
+                    order=i + 1
+                )
+                
+                # 处理职责
+                if i < len(responsibilities_list):
+                    responsibilities_text = responsibilities_list[i].strip()
+                    if responsibilities_text:
+                        # 按行分割职责，并清理格式
+                        responsibilities = [
+                            line.strip().lstrip('•\t ').strip() 
+                            for line in responsibilities_text.split('\n') 
+                            if line.strip() and not line.strip().startswith('•\t') == ''
+                        ]
+                        
+                        for j, resp in enumerate(responsibilities):
+                            if resp:
+                                WorkResponsibility.objects.create(
+                                    experience=job,
+                                    description=resp,
+                                    order=j + 1
+                                )
+        
+        messages.success(request, 'Work experience updated successfully!')
+    except Exception as e:
+        messages.error(request, f'Failed to update work experience: {e}')
+    return redirect('blog:about')
+
+@login_required
+def create_post(request):
+    if request.method == 'POST':
+        form = PostForm(request.POST, request.FILES)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.author = request.user
+            # 自动生成slug
+            if not post.slug:
+                from django.utils.text import slugify
+                base_slug = slugify(post.title)
+                if not base_slug:
+                    base_slug = 'post'
+                if Post.objects.filter(slug=base_slug).exists():
+                    import uuid
+                    unique_id = str(uuid.uuid4())[:8]
+                    post.slug = f"{base_slug}-{unique_id}"
+                else:
+                    post.slug = base_slug
+            post.save()
+            form.save_m2m()
+            return redirect('blog:post_detail', slug=post.slug)
+    else:
+        form = PostForm()
+    return render(request, 'blog/create_post.html', {'form': form, 'categories': Category.objects.all(), 'tags': Tag.objects.all()})

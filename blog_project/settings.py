@@ -142,8 +142,24 @@ REST_FRAMEWORK = {
 
 # 配置Django Admin
 ADMIN_SITE_HEADER = "Blog Management System"
-ADMIN_SITE_TITLE = "Blog Admin"
-ADMIN_INDEX_TITLE = "Welcome to Blog Management System"
+ADMIN_SITE_TITLE = "Blog Admin Panel"
+ADMIN_INDEX_TITLE = "Welcome to Blog Management Dashboard"
+
+# 添加管理员界面优化配置
+ADMIN_REORDER = (
+    ('blog', (
+        'Post',
+        'Category', 
+        'Tag',
+        'Comment',
+    )),
+    ('users', (
+        'User',
+    )),
+    ('auth', (
+        'Group',
+    )),
+)
 
 # 配置用户模型
 AUTH_USER_MODEL = 'users.User'

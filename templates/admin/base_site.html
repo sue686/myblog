@@ -5,39 +5,30 @@
 
 {% block extrastyle %}
     {{ block.super }}
-    <link rel="stylesheet" type="text/css" href="{% static 'admin/css/custom/custom_admin.css' %}" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{% static 'admin/css/custom/custom_admin.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 {% endblock %}
 
 {% block branding %}
-<h1 id="site-name">
-    <a href="{% url 'admin:index' %}">
-        <i class="bi bi-journal-code"></i> 博客管理系统
-    </a>
-</h1>
-{% endblock %}
-
-{% block welcome-msg %}
-    <span class="user-info"><i class="bi bi-person-circle"></i> {{ user.get_username }}</span>
-{% endblock %}
-
-{% block userlinks %}
-    {% if site_url %}
-        <a href="{{ site_url }}" class="viewsite-link">
-            <i class="bi bi-house-door"></i> 网站首页
+    <h1 id="site-name">
+        <a href="{% url 'admin:index' %}">
+            <i class="fas fa-blog" style="font-size: 1.2em; margin-right: 0.5rem;"></i>
+            <span style="font-weight: 800; letter-spacing: -0.025em;">Blog Management System</span>
         </a>
-    {% endif %}
-    {% if user.is_active and user.is_staff %}
-        {% url 'django-admindocs-docroot' as docsroot %}
-        {% if docsroot %}
-            <a href="{{ docsroot }}"><i class="bi bi-book"></i> 文档</a>
-        {% endif %}
-    {% endif %}
-    {% if user.has_usable_password %}
-        <a href="{% url 'admin:password_change' %}"><i class="bi bi-key"></i> 修改密码</a>
-    {% endif %}
-    <a href="{% url 'admin:logout' %}"><i class="bi bi-box-arrow-right"></i> 退出登录</a>
-    {% if request.user.is_superuser %}
-        <a href="{% url 'admin_dashboard' %}"><i class="bi bi-speedometer2"></i> 仪表盘</a>
-    {% endif %}
+    </h1>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}
+
+{% block footer %}
+    <div style="text-align: center; padding: 2rem; color: #6b7280; font-size: 0.875rem;">
+        <p>© 2024 Blog Management System. Built with ❤️ using Django.</p>
+        <p style="margin-top: 0.5rem;">
+            <i class="fas fa-shield-alt" style="margin-right: 0.25rem;"></i>
+            Secure Admin Panel
+        </p>
+    </div>
 {% endblock %} 

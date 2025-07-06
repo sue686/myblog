@@ -1,0 +1,23 @@
+{% extends 'blog/base.html' %}
+{% block title %}编辑 About Me{% endblock %}
+{% block content %}
+<div class="container" style="max-width: 900px; margin: 2rem auto;">
+    <h1 style="font-size:2rem;font-weight:800;margin-bottom:1.2rem;">编辑 About Me 页面内容</h1>
+    <form method="post" style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.04);padding:2rem 2.5rem;">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        <div style="margin-bottom:1.5rem;">
+            <label for="id_html_content" style="font-weight:700;">页面HTML源码：</label><br>
+            {{ form.html_content }}
+            {% if form.html_content.errors %}
+                <div style="color:#e53e3e;font-size:0.98rem;">{{ form.html_content.errors }}</div>
+            {% endif %}
+        </div>
+        <button type="submit" class="button" style="background:#3b82f6;color:#fff;padding:0.6em 1.2em;border-radius:6px;font-weight:700;">保存</button>
+        <a href="{% url 'blog:about' %}" class="button" style="margin-left:1.2em;background:#e5e7eb;color:#222;">取消</a>
+    </form>
+    <div style="margin-top:2rem;color:#888;font-size:0.98rem;">
+        <b>提示：</b>可直接粘贴或编辑整个about页面HTML源码，保存后所有用户都能看到最新内容。
+    </div>
+</div>
+{% endblock %} 

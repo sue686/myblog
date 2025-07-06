@@ -6,6 +6,7 @@ from django.conf import settings
 from django.utils.text import slugify
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+import re
 
 class Profile(models.Model):
     """用户个人资料"""
@@ -118,10 +119,22 @@ class Post(models.Model):
     def __str__(self):
         return self.title
 
+    def clean_slug(self, text):
+        """清理slug，确保只包含允许的字符"""
+        # 先使用Django的slugify
+        slug = slugify(text)
+        # 再次清理，确保只包含字母、数字、连字符和下划线
+        slug = re.sub(r'[^a-zA-Z0-9_-]', '', slug)
+        # 移除多余的连字符
+        slug = re.sub(r'-+', '-', slug)
+        # 移除开头和结尾的连字符
+        slug = slug.strip('-')
+        return slug
+
     def save(self, *args, **kwargs):
         # 如果slug为空，自动根据标题生成
         if not self.slug:
-            self.slug = slugify(self.title)
+            self.slug = self.clean_slug(self.title)
             
             # 确保slug唯一
             original_slug = self.slug
@@ -129,6 +142,9 @@ class Post(models.Model):
             while Post.objects.filter(slug=self.slug).exists():
                 self.slug = f"{original_slug}-{counter}"
                 counter += 1
+        else:
+            # 如果slug已存在，也要清理一下
+            self.slug = self.clean_slug(self.slug)
                 
         super().save(*args, **kwargs)
 
@@ -167,3 +183,147 @@ class Comment(models.Model):
     
     def __str__(self):
         return f"{self.author.username}对《{self.post.title}》的评论" 
+
+class AboutPageContent(models.Model):
+    html_content = models.TextField('About页面HTML源码', blank=True, default='')
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"AboutPageContent (updated {self.updated_at})"
+
+# About Me 页面相关模型
+class AboutProfile(models.Model):
+    """个人基本信息"""
+    name = models.CharField(max_length=100, verbose_name='姓名')
+    title = models.CharField(max_length=100, verbose_name='职位')
+    email = models.EmailField(verbose_name='邮箱')
+    phone = models.CharField(max_length=50, verbose_name='电话')
+    location = models.CharField(max_length=100, verbose_name='地址')
+    linkedin = models.URLField(blank=True, verbose_name='LinkedIn')
+    github = models.URLField(blank=True, verbose_name='GitHub')
+    twitter = models.URLField(blank=True, verbose_name='Twitter')
+    website = models.URLField(blank=True, verbose_name='个人网站')
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = '个人信息'
+        verbose_name_plural = '个人信息'
+
+    def __str__(self):
+        return f"{self.name} - {self.title}"
+
+class AboutSummary(models.Model):
+    """专业总结"""
+    content = models.TextField(verbose_name='专业总结')
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = '专业总结'
+        verbose_name_plural = '专业总结'
+
+    def __str__(self):
+        return "专业总结"
+
+class WorkExperience(models.Model):
+    """工作经历"""
+    position = models.CharField(max_length=100, verbose_name='职位')
+    company = models.CharField(max_length=100, verbose_name='公司')
+    location = models.CharField(max_length=100, blank=True, verbose_name='地点')
+    period = models.CharField(max_length=100, verbose_name='时间段')
+    order = models.PositiveIntegerField(default=0, verbose_name='排序')
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = '工作经历'
+        verbose_name_plural = '工作经历'
+        ordering = ['order']
+
+    def __str__(self):
+        return f"{self.position} @ {self.company}"
+
+class WorkResponsibility(models.Model):
+    """工作职责"""
+    experience = models.ForeignKey(WorkExperience, on_delete=models.CASCADE, related_name='responsibilities')
+    description = models.TextField(verbose_name='职责描述')
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        verbose_name = '工作职责'
+        verbose_name_plural = '工作职责'
+        ordering = ['order']
+
+    def __str__(self):
+        return f"{self.experience.position} - {self.description[:50]}"
+
+class SkillGroup(models.Model):
+    """技能分组"""
+    category = models.CharField(max_length=100, verbose_name='技能类别')
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        verbose_name = '技能分组'
+        verbose_name_plural = '技能分组'
+        ordering = ['order']
+
+    def __str__(self):
+        return self.category
+
+class SkillItem(models.Model):
+    """技能项目"""
+    group = models.ForeignKey(SkillGroup, on_delete=models.CASCADE, related_name='items')
+    name = models.CharField(max_length=100, verbose_name='技能名称')
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        verbose_name = '技能项目'
+        verbose_name_plural = '技能项目'
+        ordering = ['order']
+
+    def __str__(self):
+        return f"{self.group.category} - {self.name}"
+
+class EducationExperience(models.Model):
+    """教育经历"""
+    degree = models.CharField(max_length=100, verbose_name='学位')
+    institution = models.CharField(max_length=100, verbose_name='学校')
+    location = models.CharField(max_length=100, blank=True, verbose_name='地点')
+    period = models.CharField(max_length=100, blank=True, verbose_name='时间段')
+    order = models.PositiveIntegerField(default=0)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = '教育经历'
+        verbose_name_plural = '教育经历'
+        ordering = ['order']
+
+    def __str__(self):
+        return f"{self.degree} @ {self.institution}"
+
+class EducationProject(models.Model):
+    """教育项目"""
+    education = models.ForeignKey(EducationExperience, on_delete=models.CASCADE, related_name='projects')
+    title = models.TextField(verbose_name='项目名称')
+    description = models.TextField(blank=True, verbose_name='项目描述')
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        verbose_name = '教育项目'
+        verbose_name_plural = '教育项目'
+        ordering = ['order']
+
+    def __str__(self):
+        return f"{self.education.degree} - {self.title[:50]}"
+
+class EducationCourse(models.Model):
+    """教育课程"""
+    education = models.ForeignKey(EducationExperience, on_delete=models.CASCADE, related_name='courses')
+    name = models.CharField(max_length=100, verbose_name='课程名称')
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        verbose_name = '教育课程'
+        verbose_name_plural = '教育课程'
+        ordering = ['order']
+
+    def __str__(self):
+        return f"{self.education.degree} - {self.name}" 

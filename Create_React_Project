@@ -1,3 +1,0 @@
-npx create-react-app blog-frontend
-cd blog-frontend
-npm install axios react-router-dom react-markdown marked dompurify bootstrap react-bootstrap 

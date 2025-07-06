@@ -1,4 +1,5 @@
 {% extends "blog/base.html" %}
+{% load json_tags %}
 
 {% block title %}{{ title }}{% endblock %}
 
@@ -168,7 +169,6 @@
         border: none;
         border-radius: 15px;
         box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
-        overflow: hidden;
         margin-bottom: 2.5rem;
         transition: transform 0.4s ease, box-shadow 0.4s ease;
         background-color: white;
@@ -183,6 +183,7 @@
         width: 100%;
         height: 7px;
         background: var(--section-color);
+        border-radius: 15px 15px 0 0;
     }
     
     .section-card:hover {
@@ -219,8 +220,9 @@
         border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         transition: all 0.3s ease;
         position: relative;
-        overflow: hidden;
         background-color: white;
+        min-height: auto;
+        word-wrap: break-word;
     }
     
     .experience-card::before {
@@ -301,10 +303,13 @@
     }
     
     .responsibility-list li {
-        margin-bottom: 0.9rem;
+        margin-bottom: 1.2rem;
         position: relative;
-        line-height: 1.6;
+        line-height: 1.8;
         padding-left: 0.5rem;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        hyphens: auto;
     }
     
     .responsibility-list li:last-child {
@@ -474,7 +479,6 @@
         margin-bottom: 2.5rem;
         box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
         position: relative;
-        overflow: hidden;
         line-height: 1.8;
     }
     
@@ -599,10 +603,45 @@
             transform: translateY(0);
         }
     }
-    
+    /* 彻底禁用动画，防止表单被 opacity:0 遮挡 */
     .animate-fadeIn {
-        opacity: 0;
-        animation: fadeInUp 0.7s ease-out forwards;
+        opacity: 1 !important;
+        animation: none !important;
+    }
+    
+    /* Work Experience Form Styles */
+    .work-entry {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border: 2px solid #dee2e6 !important;
+        transition: all 0.3s ease;
+    }
+    
+    .work-entry:hover {
+        border-color: #007bff !important;
+        box-shadow: 0 4px 15px rgba(0, 123, 255, 0.1);
+    }
+    
+    .work-entry label {
+        color: #495057;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .work-entry .form-control {
+        border: 1px solid #ced4da;
+        border-radius: 8px;
+        padding: 0.75rem;
+        transition: border-color 0.2s ease;
+    }
+    
+    .work-entry .form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    
+    .work-entry textarea.form-control {
+        resize: vertical;
+        min-height: 120px;
     }
     
     .delay-1 { animation-delay: 0.1s; }
@@ -652,11 +691,132 @@
             box-shadow: none !important;
         }
     }
+    
+    /* Edit 按钮统一样式 */
+    .edit-btn-container {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+    }
+    
+    .btn-edit {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 25px;
+        padding: 0.6rem 1.5rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-transform: none;
+        letter-spacing: 0.5px;
+    }
+    
+    .btn-edit:hover {
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+    
+    .btn-edit:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-edit i {
+        font-size: 0.85rem;
+    }
+    
+    /* 确保所有分块都有相对定位，以便 Edit 按钮正确定位 */
+    .intro-section,
+    .summary-section,
+    .section-card {
+        position: relative;
+    }
+
+    /* 响应式样式 - 确保长内容在移动设备上正确显示 */
+    @media (max-width: 768px) {
+        .experience-card {
+            padding: 1.5rem;
+        }
+        
+        .responsibility-list {
+            padding-left: 1rem;
+        }
+        
+        .responsibility-list li {
+            font-size: 0.95rem;
+            line-height: 1.7;
+            margin-bottom: 1rem;
+        }
+        
+        .job-title {
+            font-size: 1.2rem;
+        }
+        
+        .company-info {
+            font-size: 0.9rem;
+        }
+        
+        .period-badge {
+            font-size: 0.8rem;
+            padding: 0.4rem 1rem;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .experience-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+        
+        .period-badge {
+            align-self: flex-start;
+        }
+        
+        .responsibility-list li {
+            font-size: 0.9rem;
+            padding-left: 0.3rem;
+        }
+        
+        .responsibility-list li::before {
+            left: -0.8rem;
+        }
+        
+        /* Edit 按钮移动端样式 */
+        .edit-btn-container {
+            top: 10px;
+            right: 10px;
+        }
+        
+        .btn-edit {
+            padding: 0.5rem 1.2rem;
+            font-size: 0.85rem;
+        }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
+{% if html_content %}
+    <!-- 数据库内容显示 -->
+    <div style="position:relative;">
+        {{ html_content|safe }}
+        {% if updated_at %}
+            <div style="text-align:right;color:#888;font-size:0.95rem;margin-top:1.5rem;">Last updated: {{ updated_at|date:"Y-m-d H:i" }}</div>
+        {% endif %}
+    </div>
+{% else %}
+    <!-- 默认内容显示 -->
+    <div style="position:relative;">
+        <!-- Hero Section -->
 <section class="hero-section">
     <div class="hero-overlay"></div>
     <div class="hero-pattern"></div>
@@ -665,7 +825,6 @@
         <div class="row">
             <div class="col-lg-10 mx-auto text-center">
                 <h1 class="display-4 fw-bold mb-3 animate-fadeIn">Resume</h1>
-                <p class="lead animate-fadeIn delay-1">IT Support & Development Specialist with extensive experience in technical support, system administration, and project management</p>
             </div>
         </div>
     </div>
@@ -674,62 +833,129 @@
 <div class="container mb-5 resume-container">
     <!-- Introduction Section -->
     <div class="intro-section animate-fadeIn delay-2">
-        <div class="row">
-            <div class="col-lg-8">
-                <h1 class="intro-name"><span class="name-highlight">{{ resume.name }}</span></h1>
-                <h2 class="intro-title">
-                    <i class="fas fa-user-tie"></i> IT Support Officer
-                </h2>
-                
-                <div class="contact-info">
-                    <span class="contact-info-item">
-                        <i class="fas fa-envelope"></i> {{ resume.email }}
-                    </span>
-                    <span class="contact-info-item">
-                        <i class="fas fa-phone"></i> {{ resume.phone }}
-                    </span>
-                    <span class="contact-info-item">
-                        <i class="fas fa-map-marker-alt"></i> Sydney, Australia
-                    </span>
+        {% if can_edit %}
+        <div class="edit-btn-container">
+            <button id="edit-profile-btn" class="btn btn-edit"><i class="fas fa-edit"></i> Edit</button>
+        </div>
+        {% endif %}
+        <div id="profile-view">
+            <div class="row">
+                <div class="col-lg-8">
+                    <h1 class="intro-name"><span class="name-highlight">{{ profile.name }}</span></h1>
+                    <h2 class="intro-title">
+                        <i class="fas fa-user-tie"></i> {{ profile.title }}
+                    </h2>
+                    <div class="contact-info">
+                        <span class="contact-info-item">
+                            <i class="fas fa-envelope"></i> {{ profile.email }}
+                        </span>
+                        <span class="contact-info-item">
+                            <i class="fas fa-phone"></i> {{ profile.phone }}
+                        </span>
+                        <span class="contact-info-item">
+                            <i class="fas fa-map-marker-alt"></i> {{ profile.location }}
+                        </span>
+                    </div>
                 </div>
-            </div>
-            <div class="col-lg-4">
-                <div class="social-links">
-                    <a href="#" class="social-link linkedin" title="LinkedIn Profile">
-                        <i class="fab fa-linkedin-in"></i>
-                    </a>
-                    <a href="#" class="social-link github" title="GitHub Profile">
-                        <i class="fab fa-github"></i>
-                    </a>
-                    <a href="#" class="social-link twitter" title="Twitter Profile">
-                        <i class="fab fa-twitter"></i>
-                    </a>
-                    <a href="#" class="social-link website" title="Personal Website">
-                        <i class="fas fa-globe"></i>
-                    </a>
+                <div class="col-lg-4">
+                    <!-- 头像和社交链接可后续扩展 -->
                 </div>
             </div>
         </div>
+        {% if can_edit %}
+        <form id="profile-edit-form" method="post" action="{% url 'blog:about_profile_edit' %}" style="display:none;">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="mb-3">
+                        <label>Name</label>
+                        <input type="text" name="name" class="form-control" value="{{ profile.name }}" required />
+                    </div>
+                    <div class="mb-3">
+                        <label>Title/Position</label>
+                        <input type="text" name="title" class="form-control" value="{{ profile.title }}" />
+                    </div>
+                    <div class="mb-3">
+                        <label>Email</label>
+                        <input type="email" name="email" class="form-control" value="{{ profile.email }}" />
+                    </div>
+                    <div class="mb-3">
+                        <label>Phone</label>
+                        <input type="text" name="phone" class="form-control" value="{{ profile.phone }}" />
+                    </div>
+                    <div class="mb-3">
+                        <label>Location</label>
+                        <input type="text" name="location" class="form-control" value="{{ profile.location }}" />
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-success btn-sm">Save</button>
+            <button type="button" id="cancel-profile-edit" class="btn btn-secondary btn-sm">Cancel</button>
+        </form>
+        {% endif %}
     </div>
     
     <!-- Professional Summary -->
-    <div class="summary-section animate-fadeIn delay-3">
-        <h4 class="summary-title">
-            <i class="fas fa-user-tie"></i> Professional Summary
-        </h4>
-        <div class="summary-content">
-            {{ resume.summary|safe }}
+    <div class="summary-section animate-fadeIn delay-3" style="position:relative;">
+        {% if can_edit %}
+        <div class="edit-btn-container">
+            <button id="edit-summary-btn" class="btn btn-edit"><i class="fas fa-edit"></i> Edit</button>
         </div>
+        {% endif %}
+        <div id="summary-view">
+            <h4 class="summary-title">
+                <i class="fas fa-user-tie"></i> Professional Summary
+            </h4>
+            <div class="summary-content">
+                {{ summary.content|safe }}
+            </div>
+        </div>
+        {% if can_edit %}
+        <form id="summary-edit-form" method="post" action="{% url 'blog:about_summary_edit' %}" style="display:none;">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label>Summary</label>
+                <textarea name="content" class="form-control" rows="5">{{ summary.content }}</textarea>
+            </div>
+            <button type="submit" class="btn btn-success btn-sm">Save</button>
+            <button type="button" id="cancel-summary-edit" class="btn btn-secondary btn-sm">Cancel</button>
+        </form>
+        {% endif %}
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var editBtn = document.getElementById('edit-summary-btn');
+            var editForm = document.getElementById('summary-edit-form');
+            var viewDiv = document.getElementById('summary-view');
+            var cancelBtn = document.getElementById('cancel-summary-edit');
+            if (editBtn) {
+                editBtn.onclick = function() {
+                    viewDiv.style.display = 'none';
+                    editForm.style.display = 'block';
+                };
+            }
+            if (cancelBtn) {
+                cancelBtn.onclick = function() {
+                    editForm.style.display = 'none';
+                    viewDiv.style.display = 'block';
+                };
+            }
+        });
+    </script>
 
     <!-- Work Experience -->
-    <div class="section-card section-work animate-fadeIn delay-4">
+    <div class="section-card section-work">
         <div class="section-header">
             <i class="fas fa-briefcase"></i>
             <h3>Work Experience</h3>
+            {% if can_edit %}
+            <div class="edit-btn-container">
+                <button id="edit-work-btn" class="btn btn-edit"><i class="fas fa-edit"></i> Edit</button>
+            </div>
+            {% endif %}
         </div>
-        <div class="section-body">
-            {% for job in resume.experience %}
+        <div class="section-body" id="work-view">
+            {% for job in work_experiences_qs %}
             <div class="experience-card">
                 <div class="experience-header">
                     <div>
@@ -737,7 +963,7 @@
                             <i class="fas fa-id-badge"></i> {{ job.position }}
                         </h4>
                         <h5 class="company-info">
-                            <i class="fas fa-building"></i> {{ job.company }} 
+                            <i class="fas fa-building"></i> {{ job.company }}
                             <i class="fas fa-map-marker-alt"></i> {{ job.location }}
                         </h5>
                     </div>
@@ -745,33 +971,191 @@
                         <i class="far fa-calendar-alt"></i> {{ job.period }}
                     </span>
                 </div>
+                {% if job.responsibilities.all %}
                 <ul class="responsibility-list">
-                    {% for resp in job.responsibilities %}
-                    <li>{{ resp }}</li>
+                    {% for resp in job.responsibilities.all %}
+                    <li>{{ resp.description }}</li>
                     {% endfor %}
                 </ul>
+                {% endif %}
             </div>
             {% endfor %}
         </div>
+        {% if can_edit %}
+        <form id="work-edit-form" method="post" action="{% url 'blog:about_work_bulk_edit' %}" style="display:none;">
+            {% csrf_token %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> <strong>编辑工作经历</strong><br>
+                请填写详细的工作经历信息，包括职位、公司、时间段和具体职责。每个职责请单独一行。
+            </div>
+            <div id="work-entries-container">
+                {% for job in work_experiences_qs %}
+                <div class="work-entry border rounded p-4 mb-4 bg-light" data-index="{{ forloop.counter0 }}">
+                    <h5 class="mb-3 text-primary"><i class="fas fa-briefcase"></i> 工作经历 #{{ forloop.counter }}</h5>
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <div class="mb-3">
+                                <label><strong>Position / Job Title</strong></label>
+                                <input type="text" name="positions[]" class="form-control" value="{{ job.position }}" required placeholder="e.g., IT Operations Specialist" />
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="mb-3">
+                                <label><strong>Period</strong></label>
+                                <input type="text" name="periods[]" class="form-control" value="{{ job.period }}" placeholder="e.g., 2024-Present" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <div class="mb-3">
+                                <label><strong>Company / Organization</strong></label>
+                                <input type="text" name="companies[]" class="form-control" value="{{ job.company }}" placeholder="e.g., Wellington Education Group" />
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="mb-3">
+                                <label><strong>Location</strong></label>
+                                <input type="text" name="locations[]" class="form-control" value="{{ job.location }}" placeholder="e.g., Wellington, New Zealand" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label><strong>Responsibilities & Achievements</strong> (one per line)</label>
+                        <textarea name="responsibilities[]" class="form-control" rows="8" placeholder="• Managed and optimized internal network information systems to meet business requirements
+• Provided technical support for information systems such as e-learning and RTO
+• Developed CI/CD pipelines from TeamCity to GitHub Actions
+• Designed and optimized Linux and Windows Servers, printers, and networks">{% for resp in job.responsibilities.all %}{{ resp.description }}{% if not forloop.last %}
+{% endif %}{% endfor %}</textarea>
+                        <small class="text-muted">请按每行一个职责/成就的格式输入，支持详细描述</small>
+                    </div>
+                    <div class="text-end">
+                        <button type="button" class="btn btn-danger btn-sm remove-work-entry"><i class="fas fa-trash"></i> 删除此条经历</button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="text-center mb-3">
+                <button type="button" id="add-work-entry" class="btn btn-success btn-sm"><i class="fas fa-plus"></i> 添加工作经历</button>
+            </div>
+            <div class="text-center">
+                <button type="submit" class="btn btn-success btn-sm me-2"><i class="fas fa-save"></i> 保存</button>
+                <button type="button" id="cancel-work-edit" class="btn btn-secondary btn-sm"><i class="fas fa-times"></i> 取消</button>
+            </div>
+        </form>
+        {% endif %}
     </div>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var editBtn = document.getElementById('edit-work-btn');
+        var editForm = document.getElementById('work-edit-form');
+        var viewDiv = document.getElementById('work-view');
+        var cancelBtn = document.getElementById('cancel-work-edit');
+        var addBtn = document.getElementById('add-work-entry');
+        var container = document.getElementById('work-entries-container');
+        
+        if (editBtn) {
+            editBtn.onclick = function() {
+                viewDiv.style.display = 'none';
+                editForm.style.display = 'block';
+            };
+        }
+        if (cancelBtn) {
+            cancelBtn.onclick = function() {
+                editForm.style.display = 'none';
+                viewDiv.style.display = 'block';
+            };
+        }
+        
+        // Add new work entry
+        if (addBtn) {
+            addBtn.onclick = function() {
+                var newEntry = document.createElement('div');
+                newEntry.className = 'work-entry border rounded p-4 mb-4 bg-light';
+                var entryCount = container.children.length + 1;
+                newEntry.innerHTML = `
+                    <h5 class="mb-3 text-primary"><i class="fas fa-briefcase"></i> 工作经历 #${entryCount}</h5>
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <div class="mb-3">
+                                <label><strong>Position / Job Title</strong></label>
+                                <input type="text" name="positions[]" class="form-control" required placeholder="e.g., IT Operations Specialist" />
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="mb-3">
+                                <label><strong>Period</strong></label>
+                                <input type="text" name="periods[]" class="form-control" placeholder="e.g., 2024-Present" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <div class="mb-3">
+                                <label><strong>Company / Organization</strong></label>
+                                <input type="text" name="companies[]" class="form-control" placeholder="e.g., Wellington Education Group" />
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="mb-3">
+                                <label><strong>Location</strong></label>
+                                <input type="text" name="locations[]" class="form-control" placeholder="e.g., Wellington, New Zealand" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label><strong>Responsibilities & Achievements</strong> (one per line)</label>
+                        <textarea name="responsibilities[]" class="form-control" rows="8" placeholder="• Managed and optimized internal network information systems to meet business requirements
+• Provided technical support for information systems such as e-learning and RTO
+• Developed CI/CD pipelines from TeamCity to GitHub Actions
+• Designed and optimized Linux and Windows Servers, printers, and networks"></textarea>
+                        <small class="text-muted">请按每行一个职责/成就的格式输入，支持详细描述</small>
+                    </div>
+                    <div class="text-end">
+                        <button type="button" class="btn btn-danger btn-sm remove-work-entry"><i class="fas fa-trash"></i> 删除此条经历</button>
+                    </div>
+                `;
+                container.appendChild(newEntry);
+                bindRemoveEvents();
+            };
+        }
+        
+        // Remove work entry
+        function bindRemoveEvents() {
+            document.querySelectorAll('.remove-work-entry').forEach(function(btn) {
+                btn.onclick = function() {
+                    if (confirm('确定要删除这条工作经历吗？')) {
+                        btn.closest('.work-entry').remove();
+                    }
+                };
+            });
+        }
+        bindRemoveEvents();
+    });
+    </script>
 
     <!-- Skills -->
-    <div class="section-card section-skills animate-fadeIn delay-5">
+    <div class="section-card section-skills animate-fadeIn delay-5" style="position:relative;">
         <div class="section-header">
             <i class="fas fa-laptop-code"></i>
             <h3>Professional Skills</h3>
+            {% if can_edit %}
+            <div class="edit-btn-container">
+                <button id="edit-skills-btn" class="btn btn-edit"><i class="fas fa-edit"></i> Edit</button>
+            </div>
+            {% endif %}
         </div>
-        <div class="skills-section">
+        <div class="skills-section" id="skills-view">
             <div class="skills-grid">
-                {% for skill_group in resume.skills %}
+                {% for skill_group in skill_groups_qs %}
                 <div class="skill-category">
                     <h5 class="skills-title">
                         <i class="fas fa-check-circle"></i> {{ skill_group.category }}
                     </h5>
                     <div class="skill-badges">
-                        {% for item in skill_group.items %}
+                        {% for item in skill_group.items.all %}
                         <span class="skill-badge">
-                            <i class="fas fa-circle"></i> {{ item }}
+                            <i class="fas fa-circle"></i> {{ item.name }}
                         </span>
                         {% endfor %}
                     </div>
@@ -779,16 +1163,128 @@
                 {% endfor %}
             </div>
         </div>
+        {% if can_edit %}
+        <form id="skills-edit-form" method="post" action="{% url 'blog:about_skills_bulk_edit' %}" style="display:none;">
+            {% csrf_token %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> <strong>编辑技能信息</strong><br>
+                请按分类组织技能，每个分类可以包含多个技能项目。
+            </div>
+            <div id="skills-entries-container">
+                {% for skill_group in skill_groups_qs %}
+                <div class="skill-group-entry border rounded p-4 mb-4 bg-light" data-index="{{ forloop.counter0 }}">
+                    <h5 class="mb-3 text-success"><i class="fas fa-laptop-code"></i> 技能分类 #{{ forloop.counter }}</h5>
+                    <div class="mb-3">
+                        <label><strong>Category / 分类名称</strong></label>
+                        <input type="text" name="categories[]" class="form-control" value="{{ skill_group.category }}" required placeholder="e.g., Technical Skills & Tools" />
+                    </div>
+                    <div class="mb-3">
+                        <label><strong>Skills / 技能列表</strong> (one per line)</label>
+                        <textarea name="skills[]" class="form-control" rows="6" placeholder="Python
+Java
+Docker
+JavaScript
+GO
+VUE/React">{% for item in skill_group.items.all %}{{ item.name }}{% if not forloop.last %}
+{% endif %}{% endfor %}</textarea>
+                        <small class="text-muted">请按每行一个技能的格式输入</small>
+                    </div>
+                    <div class="text-end">
+                        <button type="button" class="btn btn-danger btn-sm remove-skill-group"><i class="fas fa-trash"></i> 删除此分类</button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="text-center mb-3">
+                <button type="button" id="add-skill-group" class="btn btn-success btn-sm"><i class="fas fa-plus"></i> 添加技能分类</button>
+            </div>
+            <div class="text-center">
+                <button type="submit" class="btn btn-success btn-sm me-2"><i class="fas fa-save"></i> 保存</button>
+                <button type="button" id="cancel-skills-edit" class="btn btn-secondary btn-sm"><i class="fas fa-times"></i> 取消</button>
+            </div>
+        </form>
+        {% endif %}
     </div>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var editBtn = document.getElementById('edit-skills-btn');
+        var editForm = document.getElementById('skills-edit-form');
+        var viewDiv = document.getElementById('skills-view');
+        var cancelBtn = document.getElementById('cancel-skills-edit');
+        var addBtn = document.getElementById('add-skill-group');
+        var container = document.getElementById('skills-entries-container');
+        
+        if (editBtn) {
+            editBtn.onclick = function() {
+                viewDiv.style.display = 'none';
+                editForm.style.display = 'block';
+            };
+        }
+        if (cancelBtn) {
+            cancelBtn.onclick = function() {
+                editForm.style.display = 'none';
+                viewDiv.style.display = 'block';
+            };
+        }
+        
+        // Add new skill group
+        if (addBtn) {
+            addBtn.onclick = function() {
+                var newEntry = document.createElement('div');
+                newEntry.className = 'skill-group-entry border rounded p-4 mb-4 bg-light';
+                var entryCount = container.children.length + 1;
+                newEntry.innerHTML = `
+                    <h5 class="mb-3 text-success"><i class="fas fa-laptop-code"></i> 技能分类 #${entryCount}</h5>
+                    <div class="mb-3">
+                        <label><strong>Category / 分类名称</strong></label>
+                        <input type="text" name="categories[]" class="form-control" required placeholder="e.g., Technical Skills & Tools" />
+                    </div>
+                    <div class="mb-3">
+                        <label><strong>Skills / 技能列表</strong> (one per line)</label>
+                        <textarea name="skills[]" class="form-control" rows="6" placeholder="Python
+Java
+Docker
+JavaScript
+GO
+VUE/React"></textarea>
+                        <small class="text-muted">请按每行一个技能的格式输入</small>
+                    </div>
+                    <div class="text-end">
+                        <button type="button" class="btn btn-danger btn-sm remove-skill-group"><i class="fas fa-trash"></i> 删除此分类</button>
+                    </div>
+                `;
+                container.appendChild(newEntry);
+                bindRemoveSkillEvents();
+            };
+        }
+        
+        // Remove skill group
+        function bindRemoveSkillEvents() {
+            document.querySelectorAll('.remove-skill-group').forEach(function(btn) {
+                btn.onclick = function() {
+                    if (confirm('确定要删除这个技能分类吗？')) {
+                        btn.closest('.skill-group-entry').remove();
+                    }
+                };
+            });
+        }
+        bindRemoveSkillEvents();
+    });
+    </script>
 
     <!-- Education -->
-    <div class="section-card section-education">
+    <div class="section-card section-education" style="position:relative;">
         <div class="section-header">
             <i class="fas fa-graduation-cap"></i>
             <h3>Education</h3>
+            {% if can_edit %}
+            <div class="edit-btn-container">
+                <button id="edit-education-btn" class="btn btn-edit"><i class="fas fa-edit"></i> Edit</button>
+            </div>
+            {% endif %}
         </div>
-        <div class="education-section">
-            {% for edu in resume.education %}
+        <div class="education-section" id="education-view">
+            {% for edu in educations_qs %}
             <div class="experience-card">
                 <div class="experience-header">
                     <div>
@@ -804,13 +1300,12 @@
                         <i class="far fa-calendar-alt"></i> {{ edu.period }}
                     </span>
                 </div>
-                
-                {% if edu.projects %}
+                {% if edu.projects.all %}
                 <div class="mt-4">
                     <h5 class="skills-title">
                         <i class="fas fa-project-diagram"></i> Projects
                     </h5>
-                    {% for project in edu.projects %}
+                    {% for project in edu.projects.all %}
                     <div class="project-card">
                         <h6 class="project-title">
                             <i class="fas fa-code-branch"></i> {{ project.title }}
@@ -820,16 +1315,15 @@
                     {% endfor %}
                 </div>
                 {% endif %}
-                
-                {% if edu.courses %}
+                {% if edu.courses.all %}
                 <div class="mt-4">
                     <h5 class="skills-title">
                         <i class="fas fa-book"></i> Key Courses
                     </h5>
                     <div class="course-badges">
-                        {% for course in edu.courses %}
+                        {% for course in edu.courses.all %}
                         <span class="course-badge">
-                            <i class="fas fa-certificate"></i> {{ course }}
+                            <i class="fas fa-certificate"></i> {{ course.name }}
                         </span>
                         {% endfor %}
                     </div>
@@ -838,7 +1332,167 @@
             </div>
             {% endfor %}
         </div>
+        {% if can_edit %}
+        <form id="education-edit-form" method="post" action="{% url 'blog:about_education_bulk_edit' %}" style="display:none;">
+            {% csrf_token %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> <strong>编辑教育经历</strong><br>
+                请填写详细的教育经历信息，包括学位、学校、时间段、项目和课程。
+            </div>
+            <div id="education-entries-container">
+                {% for edu in educations_qs %}
+                <div class="education-entry border rounded p-4 mb-4 bg-light" data-index="{{ forloop.counter0 }}">
+                    <h5 class="mb-3 text-info"><i class="fas fa-graduation-cap"></i> 教育经历 #{{ forloop.counter }}</h5>
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <div class="mb-3">
+                                <label><strong>Degree / 学位</strong></label>
+                                <input type="text" name="degrees[]" class="form-control" value="{{ edu.degree }}" required placeholder="e.g., Master of Information Technology, Major in Software Engineering" />
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="mb-3">
+                                <label><strong>Period</strong></label>
+                                <input type="text" name="periods[]" class="form-control" value="{{ edu.period }}" placeholder="e.g., 02/2022 ~ 06/2023" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <div class="mb-3">
+                                <label><strong>Institution / 学校</strong></label>
+                                <input type="text" name="institutions[]" class="form-control" value="{{ edu.institution }}" placeholder="e.g., University of Sydney, Australia" />
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="mb-3">
+                                <label><strong>Location</strong></label>
+                                <input type="text" name="locations[]" class="form-control" value="{{ edu.location }}" placeholder="e.g., Sydney, Australia" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label><strong>Projects / 项目</strong> (one per line)</label>
+                        <textarea name="projects[]" class="form-control" rows="4" placeholder="Thesis Project: Developed a Pesticide Guide App to assist farmers in identifying pesticide information and implementing crop protection measures. The front-end utilized Vue.js for front-end development and Java to create RESTful APIs. Deployment was carried out using AWS EC2 services.">{% for project in edu.projects.all %}{{ project.title }}: {{ project.description }}{% if not forloop.last %}
+{% endif %}{% endfor %}</textarea>
+                        <small class="text-muted">请按每行一个项目的格式输入，格式：项目名称: 项目描述</small>
+                    </div>
+                    <div class="mb-3">
+                        <label><strong>Key Courses / 主要课程</strong> (one per line)</label>
+                        <textarea name="courses[]" class="form-control" rows="3" placeholder="Advanced Database Systems
+Software Engineering Principles
+Web Application Development">{% for course in edu.courses.all %}{{ course.name }}{% if not forloop.last %}
+{% endif %}{% endfor %}</textarea>
+                        <small class="text-muted">请按每行一个课程的格式输入</small>
+                    </div>
+                    <div class="text-end">
+                        <button type="button" class="btn btn-danger btn-sm remove-education-entry"><i class="fas fa-trash"></i> 删除此条经历</button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="text-center mb-3">
+                <button type="button" id="add-education-entry" class="btn btn-success btn-sm"><i class="fas fa-plus"></i> 添加教育经历</button>
+            </div>
+            <div class="text-center">
+                <button type="submit" class="btn btn-success btn-sm me-2"><i class="fas fa-save"></i> 保存</button>
+                <button type="button" id="cancel-education-edit" class="btn btn-secondary btn-sm"><i class="fas fa-times"></i> 取消</button>
+            </div>
+        </form>
+        {% endif %}
     </div>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var editBtn = document.getElementById('edit-education-btn');
+        var editForm = document.getElementById('education-edit-form');
+        var viewDiv = document.getElementById('education-view');
+        var cancelBtn = document.getElementById('cancel-education-edit');
+        var addBtn = document.getElementById('add-education-entry');
+        var container = document.getElementById('education-entries-container');
+        
+        if (editBtn) {
+            editBtn.onclick = function() {
+                viewDiv.style.display = 'none';
+                editForm.style.display = 'block';
+            };
+        }
+        if (cancelBtn) {
+            cancelBtn.onclick = function() {
+                editForm.style.display = 'none';
+                viewDiv.style.display = 'block';
+            };
+        }
+        
+        // Add new education entry
+        if (addBtn) {
+            addBtn.onclick = function() {
+                var newEntry = document.createElement('div');
+                newEntry.className = 'education-entry border rounded p-4 mb-4 bg-light';
+                var entryCount = container.children.length + 1;
+                newEntry.innerHTML = `
+                    <h5 class="mb-3 text-info"><i class="fas fa-graduation-cap"></i> 教育经历 #${entryCount}</h5>
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <div class="mb-3">
+                                <label><strong>Degree / 学位</strong></label>
+                                <input type="text" name="degrees[]" class="form-control" required placeholder="e.g., Master of Information Technology, Major in Software Engineering" />
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="mb-3">
+                                <label><strong>Period</strong></label>
+                                <input type="text" name="periods[]" class="form-control" placeholder="e.g., 02/2022 ~ 06/2023" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <div class="mb-3">
+                                <label><strong>Institution / 学校</strong></label>
+                                <input type="text" name="institutions[]" class="form-control" placeholder="e.g., University of Sydney, Australia" />
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="mb-3">
+                                <label><strong>Location</strong></label>
+                                <input type="text" name="locations[]" class="form-control" placeholder="e.g., Sydney, Australia" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label><strong>Projects / 项目</strong> (one per line)</label>
+                        <textarea name="projects[]" class="form-control" rows="4" placeholder="Thesis Project: Developed a Pesticide Guide App to assist farmers in identifying pesticide information and implementing crop protection measures. The front-end utilized Vue.js for front-end development and Java to create RESTful APIs. Deployment was carried out using AWS EC2 services."></textarea>
+                        <small class="text-muted">请按每行一个项目的格式输入，格式：项目名称: 项目描述</small>
+                    </div>
+                    <div class="mb-3">
+                        <label><strong>Key Courses / 主要课程</strong> (one per line)</label>
+                        <textarea name="courses[]" class="form-control" rows="3" placeholder="Advanced Database Systems
+Software Engineering Principles
+Web Application Development"></textarea>
+                        <small class="text-muted">请按每行一个课程的格式输入</small>
+                    </div>
+                    <div class="text-end">
+                        <button type="button" class="btn btn-danger btn-sm remove-education-entry"><i class="fas fa-trash"></i> 删除此条经历</button>
+                    </div>
+                `;
+                container.appendChild(newEntry);
+                bindRemoveEducationEvents();
+            };
+        }
+        
+        // Remove education entry
+        function bindRemoveEducationEvents() {
+            document.querySelectorAll('.remove-education-entry').forEach(function(btn) {
+                btn.onclick = function() {
+                    if (confirm('确定要删除这条教育经历吗？')) {
+                        btn.closest('.education-entry').remove();
+                    }
+                };
+            });
+        }
+        bindRemoveEducationEvents();
+    });
+    </script>
     
     <!-- Download Section -->
     <div class="download-section animate-fadeIn">
@@ -848,6 +1502,7 @@
         </button>
     </div>
 </div>
+{% endif %}
 {% endblock %}
 
 {% block extra_js %}
@@ -932,6 +1587,63 @@
                 },
                 "retina_detect": true
             });
+        }
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var editBtn = document.getElementById('edit-profile-btn');
+        var editForm = document.getElementById('profile-edit-form');
+        var viewDiv = document.getElementById('profile-view');
+        var cancelBtn = document.getElementById('cancel-profile-edit');
+        if (editBtn) {
+            editBtn.onclick = function() {
+                viewDiv.style.display = 'none';
+                editForm.style.display = 'block';
+            };
+        }
+        if (cancelBtn) {
+            cancelBtn.onclick = function() {
+                editForm.style.display = 'none';
+                viewDiv.style.display = 'block';
+            };
+        }
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 编辑切换
+        var editBtns = document.querySelectorAll('.edit-job-btn');
+        var cancelBtns = document.querySelectorAll('.cancel-job-edit');
+        editBtns.forEach(function(btn) {
+            btn.onclick = function() {
+                var jobId = btn.getAttribute('data-job-id');
+                document.querySelector('.job-view[data-job-id="'+jobId+'"]')?.style.display = 'none';
+                document.querySelector('.job-edit-form[data-job-id="'+jobId+'"]')?.style.display = 'block';
+            };
+        });
+        cancelBtns.forEach(function(btn) {
+            btn.onclick = function() {
+                var jobId = btn.getAttribute('data-job-id');
+                document.querySelector('.job-edit-form[data-job-id="'+jobId+'"]')?.style.display = 'none';
+                document.querySelector('.job-view[data-job-id="'+jobId+'"]')?.style.display = 'block';
+            };
+        });
+        // 添加切换
+        var addBtn = document.getElementById('add-job-btn');
+        var addForm = document.getElementById('add-job-form');
+        var cancelAdd = document.getElementById('cancel-add-job');
+        if(addBtn && addForm) {
+            addBtn.onclick = function() {
+                addForm.style.display = 'block';
+                addBtn.style.display = 'none';
+            };
+        }
+        if(cancelAdd && addForm && addBtn) {
+            cancelAdd.onclick = function() {
+                addForm.style.display = 'none';
+                addBtn.style.display = 'inline-block';
+            };
         }
     });
 </script>
