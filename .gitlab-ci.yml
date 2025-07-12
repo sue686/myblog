@@ -1,0 +1,156 @@
+stages:
+  - test
+  - security
+  - build
+  - deploy
+
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: "/certs"
+  IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+  POSTGRES_DB: myblog_test
+  POSTGRES_USER: test_user
+  POSTGRES_PASSWORD: test_password
+  POSTGRES_HOST_AUTH_METHOD: trust
+
+services:
+  - docker:20.10.16-dind
+  - postgres:13
+
+before_script:
+  - echo "开始CI/CD流水线..."
+
+# 代码质量检查
+lint:
+  stage: test
+  image: python:3.11
+  before_script:
+    - pip install flake8 black isort
+  script:
+    - echo "🔍 检查代码风格..."
+    - flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+    - black --check .
+    - isort --check-only .
+  only:
+    - main
+    - develop
+    - merge_requests
+
+# 单元测试
+test:
+  stage: test
+  image: python:3.11
+  services:
+    - postgres:13
+  variables:
+    DATABASE_URL: "postgres://test_user:test_password@postgres:5432/myblog_test"
+  before_script:
+    - pip install -r requirements.txt
+  script:
+    - echo "🧪 运行单元测试..."
+    - python manage.py test
+    - echo "📊 生成测试覆盖率报告..."
+    - coverage run --source='.' manage.py test
+    - coverage report
+    - coverage html
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+    paths:
+      - htmlcov/
+  only:
+    - main
+    - develop
+    - merge_requests
+
+# 安全扫描
+security_scan:
+  stage: security
+  image: python:3.11
+  before_script:
+    - pip install bandit safety
+  script:
+    - echo "🔒 执行安全扫描..."
+    - bandit -r . -f json -o bandit-report.json || true
+    - safety check --json --output safety-report.json || true
+  artifacts:
+    paths:
+      - bandit-report.json
+      - safety-report.json
+    expire_in: 1 week
+  only:
+    - main
+    - develop
+    - merge_requests
+
+# Docker镜像构建
+build_image:
+  stage: build
+  image: docker:20.10.16
+  services:
+    - docker:20.10.16-dind
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - echo "🐳 构建Docker镜像..."
+    - docker build -t $IMAGE_TAG .
+    - docker push $IMAGE_TAG
+    - echo "镜像已推送到: $IMAGE_TAG"
+  only:
+    - main
+
+# 部署到生产环境
+deploy_production:
+  stage: deploy
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache openssh-client
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan -H $DEPLOY_HOST >> ~/.ssh/known_hosts
+  script:
+    - echo "🚀 部署到生产环境..."
+    - |
+      ssh $DEPLOY_USER@$DEPLOY_HOST << 'EOF'
+        cd /home/ec2-user/myblog
+        sudo docker-compose down
+        sudo docker-compose pull
+        sudo docker-compose up -d
+        echo "等待服务启动..."
+        sleep 30
+        # 健康检查
+        if curl -f http://localhost/health/; then
+          echo "✅ 部署成功！"
+        else
+          echo "❌ 部署失败！"
+          exit 1
+        fi
+      EOF
+  environment:
+    name: production
+    url: http://$DEPLOY_HOST
+  only:
+    - main
+  when: manual  # 手动触发部署
+
+# 部署通知
+notify_deployment:
+  stage: deploy
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache curl
+  script:
+    - echo "📢 发送部署通知..."
+    - |
+      curl -X POST -H 'Content-type: application/json' \
+      --data "{\"text\":\"🚀 博客系统部署成功！\n📝 提交: $CI_COMMIT_MESSAGE\n👤 作者: $CI_COMMIT_AUTHOR\n🔗 查看: http://$DEPLOY_HOST\"}" \
+      $SLACK_WEBHOOK_URL
+  only:
+    - main
+  dependencies:
+    - deploy_production
+  when: on_success 
