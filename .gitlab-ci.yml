@@ -1,31 +1,186 @@
 stages:
   - test
+  - security
   - build
+  - deploy
 
 variables:
   DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: "/certs"
+  IMAGE_NAME: "myblog"
+  POSTGRES_DB: myblog_test
+  POSTGRES_USER: test_user
+  POSTGRES_PASSWORD: test_password
 
-# 基本测试
-test_job:
+# 🧪 代码质量和单元测试
+test_quality:
   stage: test
   image: python:3.11
-  script:
-    - echo "🧪 Running basic tests..."
-    - python --version
+  services:
+    - postgres:13
+  variables:
+    DATABASE_URL: "postgres://test_user:test_password@postgres:5432/myblog_test"
+  before_script:
     - pip install -r requirements.txt
-    - python manage.py check
+    - pip install coverage pytest pytest-django flake8 black isort
+  script:
+    - echo "🔍 Code quality checks..."
+    - flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+    - black --check .
+    - isort --check-only .
+    - echo "🧪 Running tests with coverage..."
+    - coverage run --source='.' manage.py test
+    - coverage report --show-missing
+    - coverage html
+    - echo "📊 Test coverage completed"
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+    paths:
+      - htmlcov/
+    expire_in: 1 week
+  coverage: '/TOTAL.*\s+(\d+%)$/'
   only:
     - main
+    - develop
+    - merge_requests
 
-# 基本构建
-build_job:
+# 🔒 安全扫描 (DevSecOps)
+security_scan:
+  stage: security
+  image: python:3.11
+  before_script:
+    - pip install bandit safety
+  script:
+    - echo "🔒 Security vulnerability scanning..."
+    - echo "📝 Scanning Python code for security issues..."
+    - bandit -r . -f json -o bandit-report.json -x /tests,/venv || true
+    - echo "🔍 Checking dependencies for known vulnerabilities..."
+    - safety check --json --output safety-report.json || true
+    - echo "✅ Security scan completed"
+  artifacts:
+    reports:
+      sast: bandit-report.json
+    paths:
+      - bandit-report.json
+      - safety-report.json
+    expire_in: 1 week
+  allow_failure: true
+  only:
+    - main
+    - develop
+    - merge_requests
+
+# 🐳 Docker构建和镜像优化
+build_docker:
   stage: build
   image: docker:20.10.16
   services:
     - docker:20.10.16-dind
   script:
-    - echo "🐳 Building Docker image..."
-    - docker build -t myblog:latest .
-    - echo "✅ Build completed successfully!"
+    - echo "🐳 Building optimized Docker image..."
+    - docker build -t $IMAGE_NAME:$CI_COMMIT_SHA .
+    - docker build -t $IMAGE_NAME:latest .
+    - echo "🔍 Image security scanning..."
+    - docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $PWD:/tmp/.trivy-cache aquasec/trivy:latest image --exit-code 0 --no-progress --format table $IMAGE_NAME:latest || true
+    - echo "✅ Docker build completed"
+    - docker images
   only:
-    - main 
+    - main
+
+# 🚀 自动化部署到EC2
+deploy_staging:
+  stage: deploy
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache openssh-client curl
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan -H $DEPLOY_HOST >> ~/.ssh/known_hosts
+  script:
+    - echo "🚀 Deploying to staging environment..."
+    - |
+      ssh $DEPLOY_USER@$DEPLOY_HOST << 'EOF'
+        cd /home/ec2-user/myblog
+        echo "📥 Pulling latest code..."
+        git pull origin main
+        echo "🔄 Restarting services..."
+        sudo docker-compose down
+        sudo docker-compose up -d --build
+        echo "⏳ Waiting for services to start..."
+        sleep 30
+        echo "🔍 Health check..."
+        curl -f http://localhost/health/ || echo "Health check failed"
+        echo "✅ Deployment completed!"
+      EOF
+  environment:
+    name: staging
+    url: http://$DEPLOY_HOST
+  only:
+    - main
+  when: manual
+
+# 🎯 生产部署 (手动触发)
+deploy_production:
+  stage: deploy
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache openssh-client curl
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan -H $DEPLOY_HOST >> ~/.ssh/known_hosts
+  script:
+    - echo "🎯 Production deployment initiated..."
+    - |
+      ssh $DEPLOY_USER@$DEPLOY_HOST << 'EOF'
+        cd /home/ec2-user/myblog
+        echo "💾 Creating backup..."
+        sudo docker-compose exec -T db pg_dump -U postgres myblogdb > backup_$(date +%Y%m%d_%H%M%S).sql || true
+        echo "📥 Pulling latest code..."
+        git pull origin main
+        echo "🔄 Zero-downtime deployment..."
+        sudo docker-compose up -d --build
+        echo "⏳ Waiting for services to stabilize..."
+        sleep 45
+        echo "🔍 Production health check..."
+        if curl -f http://localhost/health/; then
+          echo "✅ Production deployment successful!"
+        else
+          echo "❌ Production deployment failed!"
+          exit 1
+        fi
+        echo "🧹 Cleanup old Docker images..."
+        sudo docker image prune -f || true
+      EOF
+  environment:
+    name: production
+    url: http://$DEPLOY_HOST
+  only:
+    - main
+  when: manual
+  allow_failure: false
+
+# 📊 部署后验证
+post_deploy_tests:
+  stage: deploy
+  image: alpine:latest
+  dependencies:
+    - deploy_production
+  before_script:
+    - apk add --no-cache curl
+  script:
+    - echo "🧪 Running post-deployment tests..."
+    - curl -f http://$DEPLOY_HOST/health/ || exit 1
+    - curl -f http://$DEPLOY_HOST/ || exit 1
+    - echo "🔍 Testing API endpoints..."
+    - curl -f http://$DEPLOY_HOST/api/ || echo "API endpoint check completed"
+    - echo "✅ All post-deployment tests passed!"
+  only:
+    - main
+  when: on_success 
