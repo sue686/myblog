@@ -1,0 +1,41 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # Prometheus自身监控
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # 系统指标监控 (Node Exporter)
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 5s
+
+  # Django应用监控 - 更新为域名
+  - job_name: 'django-app'
+    static_configs:
+      - targets: ['selwyn-blog.duckdns.org:443']
+    metrics_path: '/metrics/'
+    scheme: https
+    scrape_interval: 10s
+    scrape_timeout: 10s
+
+  # 健康检查监控 - 更新为域名
+  - job_name: 'health-checks'
+    static_configs:
+      - targets: ['selwyn-blog.duckdns.org:443']
+    metrics_path: '/health/'
+    scheme: https
+    scrape_interval: 30s
+    scrape_timeout: 10s
+
+  # 备用监控 - 直接通过容器网络
+  - job_name: 'django-app-internal'
+    static_configs:
+      - targets: ['host.docker.internal:8000']
+    metrics_path: '/metrics/'
+    scrape_interval: 10s
+    scrape_timeout: 10s 
