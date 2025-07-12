@@ -1,0 +1,216 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Django Blog Monitoring Dashboard",
+    "tags": ["django", "monitoring", "devops"],
+    "timezone": "browser",
+    "refresh": "30s",
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "应用概览",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "django_info",
+            "legendFormat": "Django应用状态"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "custom": {"displayMode": "list", "orientation": "auto"},
+            "mappings": [],
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "red", "value": 80}
+              ]
+            }
+          }
+        },
+        "gridPos": {"h": 6, "w": 4, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "CPU使用率",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "system_cpu_usage_percent",
+            "legendFormat": "CPU %"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "unit": "percent",
+            "min": 0,
+            "max": 100
+          }
+        },
+        "gridPos": {"h": 6, "w": 8, "x": 4, "y": 0}
+      },
+      {
+        "id": 3,
+        "title": "内存使用率",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "(system_memory_usage_bytes{type=\"used\"} / system_memory_usage_bytes{type=\"total\"}) * 100",
+            "legendFormat": "内存使用率 %"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "unit": "percent",
+            "min": 0,
+            "max": 100
+          }
+        },
+        "gridPos": {"h": 6, "w": 8, "x": 12, "y": 0}
+      },
+      {
+        "id": 4,
+        "title": "磁盘使用率",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "(system_disk_usage_bytes{type=\"used\"} / system_disk_usage_bytes{type=\"total\"}) * 100",
+            "legendFormat": "磁盘使用率 %"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "unit": "percent",
+            "min": 0,
+            "max": 100
+          }
+        },
+        "gridPos": {"h": 6, "w": 4, "x": 20, "y": 0}
+      },
+      {
+        "id": 5,
+        "title": "用户统计",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "django_users_total",
+            "legendFormat": "总用户数"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "custom": {"displayMode": "list", "orientation": "auto"},
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": null}
+              ]
+            }
+          }
+        },
+        "gridPos": {"h": 6, "w": 6, "x": 0, "y": 6}
+      },
+      {
+        "id": 6,
+        "title": "博客文章统计",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "django_posts_total{status=\"all\"}",
+            "legendFormat": "总文章数"
+          },
+          {
+            "expr": "django_posts_total{status=\"published\"}",
+            "legendFormat": "已发布文章"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "custom": {"displayMode": "list", "orientation": "auto"},
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": null}
+              ]
+            }
+          }
+        },
+        "gridPos": {"h": 6, "w": 6, "x": 6, "y": 6}
+      },
+      {
+        "id": 7,
+        "title": "数据库连接数",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "django_db_connections",
+            "legendFormat": "活跃连接数"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "unit": "short"
+          }
+        },
+        "gridPos": {"h": 6, "w": 12, "x": 12, "y": 6}
+      },
+      {
+        "id": 8,
+        "title": "系统负载",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "node_load1",
+            "legendFormat": "1分钟负载"
+          },
+          {
+            "expr": "node_load5",
+            "legendFormat": "5分钟负载"
+          },
+          {
+            "expr": "node_load15",
+            "legendFormat": "15分钟负载"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "unit": "short"
+          }
+        },
+        "gridPos": {"h": 6, "w": 12, "x": 0, "y": 12}
+      },
+      {
+        "id": 9,
+        "title": "网络流量",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "rate(node_network_receive_bytes_total[5m])",
+            "legendFormat": "入站流量"
+          },
+          {
+            "expr": "rate(node_network_transmit_bytes_total[5m])",
+            "legendFormat": "出站流量"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "unit": "bytes"
+          }
+        },
+        "gridPos": {"h": 6, "w": 12, "x": 12, "y": 12}
+      }
+    ]
+  }
+} 

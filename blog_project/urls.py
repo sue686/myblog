@@ -4,6 +4,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import RedirectView
 from blog.health_check import health_check, readiness_check, liveness_check
+from blog.metrics import metrics_view
 
 # 导入自定义AdminSite
 from blog.admin import my_admin_site
@@ -18,6 +19,9 @@ urlpatterns = [
     path('health/', health_check, name='health_check'),
     path('ready/', readiness_check, name='readiness_check'),
     path('alive/', liveness_check, name='liveness_check'),
+    
+    # Metrics endpoint for Prometheus
+    path('metrics/', metrics_view, name='metrics'),
 ]
 
 # 在开发环境中提供媒体文件
