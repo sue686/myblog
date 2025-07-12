@@ -82,13 +82,13 @@ deploy_staging:
   script:
     - echo "🚀 Deploying to staging environment..."
     - |
-      ssh $DEPLOY_USER@$DEPLOY_HOST << 'EOF'
-        cd /home/ec2-user/myblog
+      ssh $DEPLOY_USER@$DEPLOY_HOST << EOF
+        cd /home/$DEPLOY_USER/myblog
         echo "📥 Pulling latest code..."
         git pull origin main
         echo "🔄 Restarting services..."
-        sudo docker-compose down
-        sudo docker-compose up -d --build
+        sudo docker-compose -f docker-compose.prod.yml down
+        sudo docker-compose -f docker-compose.prod.yml up -d --build
         echo "⏳ Waiting for services to start..."
         sleep 30
         echo "🔍 Health check..."
@@ -116,14 +116,14 @@ deploy_production:
   script:
     - echo "🎯 Production deployment initiated..."
     - |
-      ssh $DEPLOY_USER@$DEPLOY_HOST << 'EOF'
-        cd /home/ec2-user/myblog
+      ssh $DEPLOY_USER@$DEPLOY_HOST << EOF
+        cd /home/$DEPLOY_USER/myblog
         echo "💾 Creating backup..."
         sudo docker-compose exec -T db pg_dump -U postgres myblogdb > backup_$(date +%Y%m%d_%H%M%S).sql || true
         echo "📥 Pulling latest code..."
         git pull origin main
         echo "🔄 Zero-downtime deployment..."
-        sudo docker-compose up -d --build
+        sudo docker-compose -f docker-compose.prod.yml up -d --build
         echo "⏳ Waiting for services to stabilize..."
         sleep 45
         echo "🔍 Production health check..."
