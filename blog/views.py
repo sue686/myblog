@@ -1121,8 +1121,8 @@ def create_post(request):
     return render(request, 'blog/create_post.html', {'form': form, 'categories': Category.objects.all(), 'tags': Tag.objects.all()})
 
 def devops_view(request):
-    """DevOps技能展示页面"""
-    # 模拟从terraform文件读取信息
+    """DevOps Skills Showcase Page"""
+    # Infrastructure information from terraform files
     terraform_info = {
         'infrastructure': {
             'ec2_instance': 't3.micro',
@@ -1149,28 +1149,28 @@ def devops_view(request):
         'achievements': [
             {
                 'title': 'Infrastructure as Code',
-                'description': '使用Terraform管理AWS基础设施，实现一键部署',
+                'description': 'Managed AWS infrastructure using Terraform for one-click deployment',
                 'status': 'completed'
             },
             {
-                'title': '企业级监控',
-                'description': 'CloudWatch + SNS实现系统监控和告警',
+                'title': 'Enterprise Monitoring',
+                'description': 'Implemented CloudWatch + SNS for comprehensive system monitoring and alerting',
                 'status': 'completed'
             },
             {
-                'title': '自动化备份',
-                'description': 'S3生命周期管理实现成本优化的数据备份',
+                'title': 'Automated Backup',
+                'description': 'Cost-optimized data backup using S3 lifecycle management',
                 'status': 'completed'
             },
             {
-                'title': 'CI/CD流水线',
-                'description': 'GitLab CI/CD实现自动化测试和部署',
+                'title': 'CI/CD Pipeline',
+                'description': 'Automated testing and deployment using GitLab CI/CD',
                 'status': 'completed'
             }
         ]
     }
     
-    # 代码示例（从实际terraform文件中获取）
+    # Code examples from actual terraform files
     terraform_samples = {
         'vpc': '''resource "aws_vpc" "main" {
   cidr_block           = "10.0.0.0/16"
@@ -1217,11 +1217,11 @@ def devops_view(request):
         'demo_url': 'http://54.252.101.127',
         'monitoring_url': 'https://console.aws.amazon.com/cloudwatch/home?region=ap-southeast-2',
         'architecture_benefits': [
-            '成本优化：所有资源运行在AWS免费层内',
-            '安全性：VPC网络隔离，安全组控制访问',
-            '可扩展性：多可用区部署，支持负载均衡',
-            '监控完备：CloudWatch + SNS实现全面监控',
-            '自动化：Infrastructure as Code，一键部署'
+            'Cost Optimization: All resources run within AWS Free Tier',
+            'Security: VPC network isolation with security group access control',
+            'Scalability: Multi-AZ deployment with load balancer support',
+            'Comprehensive Monitoring: CloudWatch + SNS for full system monitoring',
+            'Automation: Infrastructure as Code with one-click deployment'
         ]
     }
     
