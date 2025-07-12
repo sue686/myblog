@@ -1119,3 +1119,110 @@ def create_post(request):
     else:
         form = PostForm()
     return render(request, 'blog/create_post.html', {'form': form, 'categories': Category.objects.all(), 'tags': Tag.objects.all()})
+
+def devops_view(request):
+    """DevOps技能展示页面"""
+    # 模拟从terraform文件读取信息
+    terraform_info = {
+        'infrastructure': {
+            'ec2_instance': 't3.micro',
+            'region': 'ap-southeast-2',
+            'vpc_cidr': '10.0.0.0/16',
+            'public_subnets': 2,
+            'private_subnets': 2,
+            'monitoring': 'CloudWatch + SNS',
+            'backup': 'S3 + Lifecycle Rules'
+        },
+        'technologies': [
+            'Terraform',
+            'AWS EC2',
+            'AWS VPC',
+            'AWS CloudWatch',
+            'AWS SNS',
+            'AWS S3',
+            'Docker',
+            'Nginx',
+            'PostgreSQL',
+            'Django',
+            'GitLab CI/CD'
+        ],
+        'achievements': [
+            {
+                'title': 'Infrastructure as Code',
+                'description': '使用Terraform管理AWS基础设施，实现一键部署',
+                'status': 'completed'
+            },
+            {
+                'title': '企业级监控',
+                'description': 'CloudWatch + SNS实现系统监控和告警',
+                'status': 'completed'
+            },
+            {
+                'title': '自动化备份',
+                'description': 'S3生命周期管理实现成本优化的数据备份',
+                'status': 'completed'
+            },
+            {
+                'title': 'CI/CD流水线',
+                'description': 'GitLab CI/CD实现自动化测试和部署',
+                'status': 'completed'
+            }
+        ]
+    }
+    
+    # 代码示例（从实际terraform文件中获取）
+    terraform_samples = {
+        'vpc': '''resource "aws_vpc" "main" {
+  cidr_block           = "10.0.0.0/16"
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+  
+  tags = {
+    Name        = "myblog-vpc"
+    Environment = "production"
+    ManagedBy   = "Terraform"
+  }
+}''',
+        'ec2': '''resource "aws_instance" "web" {
+  ami                    = var.ami_id
+  instance_type          = "t3.micro"
+  key_name              = var.key_name
+  vpc_security_group_ids = [aws_security_group.web.id]
+  subnet_id             = aws_subnet.public[0].id
+  
+  user_data = file("${path.module}/user_data.sh")
+  
+  tags = {
+    Name = "myblog-web-server"
+  }
+}''',
+        'monitoring': '''resource "aws_cloudwatch_metric_alarm" "high_cpu" {
+  alarm_name          = "myblog-high-cpu"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = "2"
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = "300"
+  statistic           = "Average"
+  threshold           = "80"
+  alarm_description   = "This metric monitors ec2 cpu utilization"
+  alarm_actions       = [aws_sns_topic.alerts.arn]
+}'''
+    }
+    
+    context = {
+        'terraform_info': terraform_info,
+        'terraform_samples': terraform_samples,
+        'page_title': 'DevOps Portfolio - Infrastructure as Code',
+        'demo_url': 'http://54.252.101.127',
+        'monitoring_url': 'https://console.aws.amazon.com/cloudwatch/home?region=ap-southeast-2',
+        'architecture_benefits': [
+            '成本优化：所有资源运行在AWS免费层内',
+            '安全性：VPC网络隔离，安全组控制访问',
+            '可扩展性：多可用区部署，支持负载均衡',
+            '监控完备：CloudWatch + SNS实现全面监控',
+            '自动化：Infrastructure as Code，一键部署'
+        ]
+    }
+    
+    return render(request, 'blog/devops.html', context)

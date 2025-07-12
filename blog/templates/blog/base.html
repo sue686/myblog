@@ -59,6 +59,11 @@
                             <i class="bi bi-info-circle"></i> About Me
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'devops' in request.path %}active{% endif %}" href="{% url 'blog:devops' %}">
+                            <i class="bi bi-cloud-arrow-up"></i> DevOps
+                        </a>
+                    </li>
                     {% if user.is_superuser %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'admin:index' %}" target="_blank">

@@ -1,0 +1,334 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }} - Selwyn's Blog{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css">
+<style>
+.devops-hero {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 80px 0;
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.devops-hero h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+.devops-hero p {
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+    opacity: 0.9;
+}
+
+.tech-stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.tech-badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.achievement-card {
+    background: white;
+    border-radius: 10px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-left: 4px solid #28a745;
+}
+
+.achievement-card h3 {
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.achievement-card p {
+    color: #666;
+    margin-bottom: 15px;
+}
+
+.status-badge {
+    background: #28a745;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.code-section {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 30px;
+    margin-bottom: 30px;
+}
+
+.code-section h3 {
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.code-block {
+    background: #2d3748;
+    color: #e2e8f0;
+    padding: 20px;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+.demo-links {
+    text-align: center;
+    margin: 50px 0;
+}
+
+.demo-btn {
+    display: inline-block;
+    padding: 15px 30px;
+    margin: 10px;
+    background: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.demo-btn:hover {
+    background: #0056b3;
+    transform: translateY(-2px);
+    color: white;
+}
+
+.architecture-section {
+    background: white;
+    border-radius: 10px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.benefits-list {
+    list-style: none;
+    padding: 0;
+}
+
+.benefits-list li {
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+    position: relative;
+    padding-left: 30px;
+}
+
+.benefits-list li:before {
+    content: "✓";
+    color: #28a745;
+    font-weight: bold;
+    position: absolute;
+    left: 0;
+}
+
+.infrastructure-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-top: 30px;
+}
+
+.infra-item {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.infra-item h4 {
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.infra-item p {
+    color: #666;
+    margin: 0;
+}
+
+.section-header {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.section-header h2 {
+    color: #333;
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+}
+
+.section-header p {
+    color: #666;
+    font-size: 1.1rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="devops-hero">
+    <div class="container">
+        <h1>DevOps Portfolio</h1>
+        <p>Infrastructure as Code · AWS Cloud Architecture · Monitoring & Automation</p>
+        <div class="tech-stack">
+            {% for tech in terraform_info.technologies %}
+            <span class="tech-badge">{{ tech }}</span>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Demo Links -->
+    <div class="demo-links">
+        <a href="{{ demo_url }}" target="_blank" class="demo-btn">
+            <i class="fas fa-external-link-alt me-2"></i>查看演示服务器
+        </a>
+        <a href="{{ monitoring_url }}" target="_blank" class="demo-btn">
+            <i class="fas fa-chart-line me-2"></i>AWS监控控制台
+        </a>
+        <a href="https://github.com/selwynliu/myblog/tree/main/terraform" target="_blank" class="demo-btn">
+            <i class="fab fa-github me-2"></i>Terraform代码仓库
+        </a>
+    </div>
+
+    <!-- Achievements Section -->
+    <div class="section-header">
+        <h2>DevOps 成就</h2>
+        <p>展示完整的DevOps技能栈和项目成果</p>
+    </div>
+
+    <div class="row">
+        {% for achievement in terraform_info.achievements %}
+        <div class="col-lg-6 col-md-12">
+            <div class="achievement-card">
+                <h3>{{ achievement.title }}</h3>
+                <p>{{ achievement.description }}</p>
+                <span class="status-badge">{{ achievement.status|upper }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Architecture Section -->
+    <div class="section-header">
+        <h2>基础设施架构</h2>
+        <p>使用Terraform管理的AWS云基础设施</p>
+    </div>
+
+    <div class="architecture-section">
+        <div class="infrastructure-grid">
+            <div class="infra-item">
+                <h4><i class="fas fa-server"></i> 计算资源</h4>
+                <p>{{ terraform_info.infrastructure.ec2_instance }}</p>
+            </div>
+            <div class="infra-item">
+                <h4><i class="fas fa-globe"></i> 区域</h4>
+                <p>{{ terraform_info.infrastructure.region }}</p>
+            </div>
+            <div class="infra-item">
+                <h4><i class="fas fa-network-wired"></i> 网络</h4>
+                <p>{{ terraform_info.infrastructure.vpc_cidr }}</p>
+            </div>
+            <div class="infra-item">
+                <h4><i class="fas fa-chart-line"></i> 监控</h4>
+                <p>{{ terraform_info.infrastructure.monitoring }}</p>
+            </div>
+            <div class="infra-item">
+                <h4><i class="fas fa-database"></i> 备份</h4>
+                <p>{{ terraform_info.infrastructure.backup }}</p>
+            </div>
+            <div class="infra-item">
+                <h4><i class="fas fa-shield-alt"></i> 安全</h4>
+                <p>VPC + Security Groups</p>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-lg-6">
+                <h4>架构优势</h4>
+                <ul class="benefits-list">
+                    {% for benefit in architecture_benefits %}
+                    <li>{{ benefit }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="col-lg-6">
+                <h4>技术特点</h4>
+                <ul class="benefits-list">
+                    <li>Infrastructure as Code (IaC)</li>
+                    <li>多可用区部署</li>
+                    <li>自动化监控告警</li>
+                    <li>成本优化设计</li>
+                    <li>一键部署和销毁</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Code Examples Section -->
+    <div class="section-header">
+        <h2>Terraform 代码示例</h2>
+        <p>展示Infrastructure as Code的实际应用</p>
+    </div>
+
+    <div class="code-section">
+        <h3>VPC 网络配置</h3>
+        <div class="code-block">{{ terraform_samples.vpc }}</div>
+    </div>
+
+    <div class="code-section">
+        <h3>EC2 实例配置</h3>
+        <div class="code-block">{{ terraform_samples.ec2 }}</div>
+    </div>
+
+    <div class="code-section">
+        <h3>CloudWatch 监控配置</h3>
+        <div class="code-block">{{ terraform_samples.monitoring }}</div>
+    </div>
+
+    <!-- Call to Action -->
+    <div class="text-center mt-5 mb-5">
+        <h3>想了解更多？</h3>
+        <p class="mb-4">这只是DevOps技能的一部分展示。在面试中，我可以现场演示Terraform的部署过程，包括 <code>terraform plan</code>、<code>terraform apply</code> 和 <code>terraform destroy</code> 的完整流程。</p>
+        <a href="{% url 'blog:about' %}" class="btn btn-primary btn-lg">
+            <i class="fas fa-user me-2"></i>了解更多关于我
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 为代码块添加语法高亮
+    const codeBlocks = document.querySelectorAll('.code-block');
+    codeBlocks.forEach(block => {
+        block.innerHTML = block.innerHTML.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    });
+});
+</script>
+{% endblock %} 

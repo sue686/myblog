@@ -8,7 +8,7 @@ from .views import (
     about_profile_edit_view, about_summary_edit_view, about_work_edit_view, 
     about_work_delete_view, about_skills_edit_view, about_education_edit_view, 
     about_work_add_view, about_work_bulk_edit_view, about_skills_bulk_edit_view, 
-    about_education_bulk_edit_view
+    about_education_bulk_edit_view, devops_view
 )
 
 app_name = 'blog'
@@ -27,6 +27,7 @@ urlpatterns = [
     path('about/education/bulk_edit/', about_education_bulk_edit_view, name='about_education_bulk_edit'),
     path('about/work/add/', about_work_add_view, name='about_work_add'),
     path('about/work/bulk_edit/', about_work_bulk_edit_view, name='about_work_bulk_edit'),
+    path('devops/', devops_view, name='devops'),
     path('categories/', CategoryListView.as_view(), name='categories_list'),
     path('category/<slug:slug>/', CategoryDetailView.as_view(), name='category_posts'),
     path('tag/<slug:slug>/', TagDetailView.as_view(), name='tag_posts'),
