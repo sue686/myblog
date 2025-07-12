@@ -114,22 +114,7 @@ deploy_production:
     - ssh-keyscan -H $DEPLOY_HOST >> ~/.ssh/known_hosts
   script:
     - echo "🚀 部署到生产环境..."
-    - |
-      ssh $DEPLOY_USER@$DEPLOY_HOST << 'EOF'
-        cd /home/ec2-user/myblog
-        sudo docker-compose down
-        sudo docker-compose pull
-        sudo docker-compose up -d
-        echo "等待服务启动..."
-        sleep 30
-        # 健康检查
-        if curl -f http://localhost/health/; then
-          echo "✅ 部署成功！"
-        else
-          echo "❌ 部署失败！"
-          exit 1
-        fi
-      EOF
+    - ssh $DEPLOY_USER@$DEPLOY_HOST "cd /home/ec2-user/myblog && sudo docker-compose down && sudo docker-compose pull && sudo docker-compose up -d && sleep 30 && curl -f http://localhost/health/"
   environment:
     name: production
     url: http://$DEPLOY_HOST
@@ -145,10 +130,7 @@ notify_deployment:
     - apk add --no-cache curl
   script:
     - echo "📢 发送部署通知..."
-    - |
-      curl -X POST -H 'Content-type: application/json' \
-      --data "{\"text\":\"🚀 博客系统部署成功！\n📝 提交: $CI_COMMIT_MESSAGE\n👤 作者: $CI_COMMIT_AUTHOR\n🔗 查看: http://$DEPLOY_HOST\"}" \
-      $SLACK_WEBHOOK_URL
+    - 'curl -X POST -H "Content-type: application/json" --data "{\"text\":\"🚀 博客系统部署成功！\\n📝 提交: $CI_COMMIT_MESSAGE\\n👤 作者: $CI_COMMIT_AUTHOR\\n🔗 查看: http://$DEPLOY_HOST\"}" $SLACK_WEBHOOK_URL || echo "No Slack webhook configured"'
   only:
     - main
   dependencies:
