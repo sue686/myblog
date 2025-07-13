@@ -12,6 +12,7 @@ services:
       - DB_HOST=db
       - DB_PORT=5432
       - ALLOWED_HOSTS=selwyn-blog.duckdns.org,3.26.32.171,localhost,127.0.0.1
+      - CSRF_TRUSTED_ORIGINS=https://selwyn-blog.duckdns.org,http://selwyn-blog.duckdns.org,https://3.26.32.171,http://3.26.32.171
     volumes:
       - static_volume:/app/staticfiles
       - media_volume:/app/media
