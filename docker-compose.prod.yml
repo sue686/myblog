@@ -4,7 +4,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DEBUG=False
+      - DEBUG=True
       - USE_HTTPS=True
       - DB_NAME=myblogdb
       - DB_USER=postgres

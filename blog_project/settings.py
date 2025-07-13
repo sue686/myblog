@@ -31,6 +31,12 @@ CSRF_TRUSTED_ORIGINS = [
     'https://3.26.32.171'
 ]
 
+# 额外的CSRF配置
+CSRF_COOKIE_HTTPONLY = False  # 允许JavaScript访问CSRF token
+CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_USE_SESSIONS = False
+CSRF_COOKIE_AGE = 31449600  # 1年
+
 # 添加已安装的应用
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -189,7 +195,7 @@ USE_HTTPS = os.getenv('USE_HTTPS', 'False').lower() == 'true'
 
 if USE_HTTPS:
     # HTTPS环境的安全设置
-    SECURE_SSL_REDIRECT = True
+    SECURE_SSL_REDIRECT = False  # 让nginx处理重定向
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_BROWSER_XSS_FILTER = True
@@ -204,4 +210,23 @@ else:
 SESSION_COOKIE_HTTPONLY = True  # 防止JavaScript访问
 SESSION_COOKIE_SAMESITE = 'Lax'  # CSRF保护
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-SESSION_COOKIE_AGE = 1209600  # 两周 
+SESSION_COOKIE_AGE = 1209600  # 两周
+
+# 日志配置（调试用）
+if DEBUG:
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'handlers': {
+            'console': {
+                'class': 'logging.StreamHandler',
+            },
+        },
+        'loggers': {
+            'django.security.csrf': {
+                'handlers': ['console'],
+                'level': 'DEBUG',
+                'propagate': True,
+            },
+        },
+    } 
