@@ -26,6 +26,7 @@ from .models import (
     SkillGroup, SkillItem, EducationExperience, EducationProject, EducationCourse
 )
 from django.views.decorators.http import require_POST
+from django.utils import timezone
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -1119,3 +1120,29 @@ def create_post(request):
     else:
         form = PostForm()
     return render(request, 'blog/create_post.html', {'form': form, 'categories': Category.objects.all(), 'tags': Tag.objects.all()})
+
+# 临时调试端点 - 检查 CSRF 配置
+def debug_csrf_config(request):
+    """临时调试端点，检查 CSRF 配置"""
+    from django.http import JsonResponse
+    from django.conf import settings
+    import os
+    
+    debug_info = {
+        'csrf_trusted_origins': getattr(settings, 'CSRF_TRUSTED_ORIGINS', 'Not set'),
+        'allowed_hosts': getattr(settings, 'ALLOWED_HOSTS', 'Not set'),
+        'debug': getattr(settings, 'DEBUG', 'Not set'),
+        'use_https': getattr(settings, 'USE_HTTPS', 'Not set'),
+        'csrf_cookie_secure': getattr(settings, 'CSRF_COOKIE_SECURE', 'Not set'),
+        'environment_variables': {
+            'CSRF_TRUSTED_ORIGINS': os.getenv('CSRF_TRUSTED_ORIGINS', 'Not set'),
+            'ALLOWED_HOSTS': os.getenv('ALLOWED_HOSTS', 'Not set'),
+            'DEBUG': os.getenv('DEBUG', 'Not set'),
+            'USE_HTTPS': os.getenv('USE_HTTPS', 'Not set'),
+        },
+        'current_origin': request.META.get('HTTP_ORIGIN', 'Not provided'),
+        'user_agent': request.META.get('HTTP_USER_AGENT', 'Not provided'),
+        'timestamp': str(timezone.now()) if 'timezone' in globals() else 'timezone not imported'
+    }
+    
+    return JsonResponse(debug_info, json_dumps_params={'indent': 2})

@@ -8,7 +8,7 @@ from .views import (
     about_profile_edit_view, about_summary_edit_view, about_work_edit_view, 
     about_work_delete_view, about_skills_edit_view, about_education_edit_view, 
     about_work_add_view, about_work_bulk_edit_view, about_skills_bulk_edit_view, 
-    about_education_bulk_edit_view
+    about_education_bulk_edit_view, debug_csrf_config
 )
 
 app_name = 'blog'
@@ -57,4 +57,7 @@ urlpatterns = [
     
     # 图片上传
     path('upload_image/', upload_image, name='upload_image'),
+    
+    # 临时调试端点
+    path('debug_csrf/', debug_csrf_config, name='debug_csrf'),
 ]
