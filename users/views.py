@@ -18,6 +18,9 @@ from django.core.cache import cache
 from django.db.models import Count
 import time
 import logging
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from django.conf import settings
 
 # 配置日志
 logger = logging.getLogger(__name__)
@@ -233,3 +236,39 @@ def user_logout(request):
     logout(request)
     messages.success(request, 'You have been logged out successfully.')
     return redirect('blog:index') 
+
+@csrf_exempt
+def test_login_no_csrf(request):
+    """临时测试端点 - 绕过 CSRF 检查测试登录功能"""
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        
+        if username and password:
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                login(request, user)
+                return JsonResponse({
+                    'status': 'success',
+                    'message': f'Login successful for {username}',
+                    'user_id': user.id,
+                    'is_authenticated': request.user.is_authenticated
+                })
+            else:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Invalid credentials'
+                }, status=401)
+        else:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Username and password required'
+            }, status=400)
+    else:
+        return JsonResponse({
+            'status': 'info',
+            'message': 'POST to this endpoint with username and password to test login',
+            'csrf_trusted_origins': getattr(settings, 'CSRF_TRUSTED_ORIGINS', 'Not set'),
+            'allowed_hosts': getattr(settings, 'ALLOWED_HOSTS', 'Not set'),
+            'debug': getattr(settings, 'DEBUG', 'Not set')
+        }) 

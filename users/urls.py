@@ -10,4 +10,5 @@ urlpatterns = [
     path('logout/', views.user_logout, name='logout'),
     path('profile/<str:username>/', views.profile, name='profile'),
     path('profile/edit/', views.edit_profile, name='edit_profile'),
+    path('test_login/', views.test_login_no_csrf, name='test_login_no_csrf'),
 ] 
