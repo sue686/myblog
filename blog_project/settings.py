@@ -24,7 +24,14 @@ ALLOWED_HOSTS = [
 ]
 
 # CSRF设置 - 修复CSRF验证失败问题
-CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', 'https://selwyn-blog.duckdns.org,http://selwyn-blog.duckdns.org,https://3.26.32.171,http://3.26.32.171').split(',')
+CSRF_TRUSTED_ORIGINS = [
+    'https://selwyn-blog.duckdns.org',
+    'http://selwyn-blog.duckdns.org',
+    'https://3.26.32.171',
+    'http://3.26.32.171',
+    'http://localhost:8000',
+    'https://localhost:8000'
+]
 
 # 额外的CSRF配置
 CSRF_COOKIE_HTTPONLY = False  # 允许JavaScript访问CSRF token
