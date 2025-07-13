@@ -12,9 +12,24 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-default-key-for-development')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
-ALLOWED_HOSTS = ['*']  # For development only
+# 修复ALLOWED_HOSTS设置
+ALLOWED_HOSTS = [
+    'selwyn-blog.duckdns.org',
+    '3.26.32.171', 
+    'localhost',
+    '127.0.0.1',
+    '*'  # 临时保留作为备选
+]
+
+# CSRF设置 - 修复CSRF验证失败问题
+CSRF_TRUSTED_ORIGINS = [
+    'http://selwyn-blog.duckdns.org',
+    'https://selwyn-blog.duckdns.org',
+    'http://3.26.32.171',
+    'https://3.26.32.171'
+]
 
 # 添加已安装的应用
 INSTALLED_APPS = [
@@ -169,8 +184,24 @@ LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 LOGIN_URL = '/users/login/'
 
+# 安全设置 - 根据环境调整
+USE_HTTPS = os.getenv('USE_HTTPS', 'False').lower() == 'true'
+
+if USE_HTTPS:
+    # HTTPS环境的安全设置
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+else:
+    # HTTP环境的设置（用于调试SSL问题）
+    SECURE_SSL_REDIRECT = False
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
+
 # 会话安全设置
-SESSION_COOKIE_SECURE = False  # 如果使用HTTPS，设置为True
 SESSION_COOKIE_HTTPONLY = True  # 防止JavaScript访问
+SESSION_COOKIE_SAMESITE = 'Lax'  # CSRF保护
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_COOKIE_AGE = 1209600  # 两周 
