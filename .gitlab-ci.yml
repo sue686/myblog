@@ -144,6 +144,41 @@ deploy_production:
   when: manual
   allow_failure: false
 
+# 🔒 部署安全监控 (手动触发)
+deploy_secure_monitoring:
+  stage: deploy
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache openssh-client curl
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan -H $DEPLOY_HOST >> ~/.ssh/known_hosts
+  script:
+    - echo "🔒 部署安全监控系统..."
+    - |
+      ssh $DEPLOY_USER@$DEPLOY_HOST << EOF
+        cd /home/$DEPLOY_USER/myblog
+        echo "📥 确保代码是最新的..."
+        git pull origin main
+        echo "🔒 启动安全监控系统..."
+        chmod +x deploy_secure_monitoring.sh
+        ./deploy_secure_monitoring.sh
+        echo "📊 检查监控状态..."
+        sudo docker ps | grep -E "(node-exporter|uptime-kuma|dozzle)" || echo "监控容器状态检查完成"
+        echo "💾 显示内存使用情况..."
+        free -h
+        echo "✅ 安全监控部署完成!"
+      EOF
+  environment:
+    name: monitoring
+    url: https://selwyn-blog.duckdns.org
+  only:
+    - main
+  when: manual
+  allow_failure: false
+
 # 📊 部署后验证
 post_deploy_tests:
   stage: deploy
