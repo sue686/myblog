@@ -179,6 +179,39 @@ deploy_secure_monitoring:
   when: manual
   allow_failure: false
 
+# 📊 启动监控系统 (手动触发)
+start_monitoring:
+  stage: deploy
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache openssh-client curl
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan -H $DEPLOY_HOST >> ~/.ssh/known_hosts
+  script:
+    - echo "📊 启动监控系统..."
+    - |
+      ssh $DEPLOY_USER@$DEPLOY_HOST << EOF
+        cd /home/$DEPLOY_USER/myblog
+        echo "📥 确保代码是最新的..."
+        git pull origin main
+        echo "🚀 启动监控服务..."
+        chmod +x start_monitoring.sh
+        ./start_monitoring.sh
+        echo "🔍 检查监控端口..."
+        netstat -tlnp | grep -E "(3000|3001|9090|9100)" || echo "端口检查完成"
+        echo "✅ 监控启动完成!"
+      EOF
+  environment:
+    name: monitoring
+    url: http://3.26.32.171:3000
+  only:
+    - main
+  when: manual
+  allow_failure: false
+
 # 📊 部署后验证
 post_deploy_tests:
   stage: deploy
